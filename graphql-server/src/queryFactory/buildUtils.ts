@@ -31,13 +31,15 @@ export function formatValueLiteral(
   return escapeStringLiteral(value);
 }
 
+const PLACEHOLDER_PATTERN = /\$\d+|\?/g;
+
 export function interpolateForDisplay(
   sql: string,
   params: unknown[],
   types: Array<{ type?: string }>,
 ): string {
   let i = 0;
-  return sql.replace(/\$\d+|\?/g, () => {
+  return sql.replace(PLACEHOLDER_PATTERN, () => {
     const value = String(params[i]);
     const type = types[i]?.type;
     i += 1;
