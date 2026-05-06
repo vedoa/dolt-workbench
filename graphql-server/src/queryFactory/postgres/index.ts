@@ -163,12 +163,7 @@ export class PostgresQueryFactory
   // TODO: get warnings for postgres
   async getSqlSelect(
     args: t.RefMaybeSchemaArgs & { queryString: string },
-  ): Promise<{
-    rows: t.RawRows;
-    isMutation: boolean;
-    executionMessage: string;
-    warnings?: string[];
-  }> {
+  ): Promise<t.SqlSelectResult> {
     return this.queryQR(
       async qr => {
         if (args.schemaName) {

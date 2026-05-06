@@ -12,7 +12,7 @@ export default function useSqlQuery(
   client: ApolloClient<NormalizedCacheObject>,
   isMut: boolean,
   gqlError?: ApolloErrorType,
-): boolean {
+): void {
   const router = useRouter();
   const { addMutation } = useSessionQueryHistory(params.databaseName);
 
@@ -45,6 +45,4 @@ export default function useSqlQuery(
       router.push(databases.hrefPathname()).catch(console.error);
     }
   }, [params.q, params.databaseName, gqlError]);
-
-  return isMut;
 }

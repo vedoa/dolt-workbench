@@ -163,12 +163,9 @@ export class MySQLQueryFactory
     );
   }
 
-  async getSqlSelect(args: t.RefArgs & { queryString: string }): Promise<{
-    rows: t.RawRows;
-    isMutation: boolean;
-    executionMessage: string;
-    warnings?: string[];
-  }> {
+  async getSqlSelect(
+    args: t.RefArgs & { queryString: string },
+  ): Promise<t.SqlSelectResult> {
     return this.queryQR(
       async qr => {
         const result = await qr.query(

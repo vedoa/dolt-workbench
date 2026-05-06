@@ -71,12 +71,9 @@ export declare class QueryFactory {
 
   getTableRows(args: t.TableMaybeSchemaArgs, page: t.TableRowPagination): t.PR;
 
-  getSqlSelect(args: t.RefMaybeSchemaArgs & { queryString: string }): Promise<{
-    rows: t.RawRows;
-    isMutation: boolean;
-    executionMessage: string;
-    warnings?: string[];
-  }>;
+  getSqlSelect(
+    args: t.RefMaybeSchemaArgs & { queryString: string },
+  ): Promise<t.SqlSelectResult>;
 
   deleteRow(
     args: t.RefMaybeSchemaArgs & {

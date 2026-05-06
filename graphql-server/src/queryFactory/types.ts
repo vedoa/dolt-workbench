@@ -61,6 +61,13 @@ export type RawRowWithDiff = {
   diff?: RawRow;
 };
 export type RawRows = RawRow[];
+
+export type SqlSelectResult = {
+  rows: RawRows;
+  isMutation: boolean;
+  executionMessage: string;
+  warnings?: string[];
+};
 export type RawRowsWithDiff = RawRowWithDiff[];
 export type PR = Promise<RawRows>;
 export type SPR = Promise<RawRow>;

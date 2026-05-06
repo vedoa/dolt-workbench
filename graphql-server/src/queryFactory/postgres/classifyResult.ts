@@ -21,11 +21,12 @@ export type ClassifiedResult = {
 
 export function classifyPgResult(res: PgQueryResult): ClassifiedResult {
   const isMutation = !PG_READ_COMMANDS.has(res.command ?? "");
+  const rows = res.rows ?? [];
   if (!isMutation) {
-    return { rows: res.rows ?? [], isMutation: false, executionMessage: "" };
+    return { rows, isMutation: false, executionMessage: "" };
   }
   return {
-    rows: [],
+    rows,
     isMutation: true,
     executionMessage: `Query OK, ${res.rowCount ?? 0} rows affected.`,
   };

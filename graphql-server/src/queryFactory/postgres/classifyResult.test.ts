@@ -62,71 +62,84 @@ describe("classifyPgResult", () => {
     });
   });
 
-  describe("mutation commands return empty rows, isMutation: true, with message", () => {
+  describe("mutation commands set isMutation: true, with message", () => {
     const mutations = [
       {
         desc: "INSERT (no RETURNING)",
         res: { command: "INSERT", rows: [], rowCount: 1 },
+        expectedRows: [],
         expectedMessage: "Query OK, 1 rows affected.",
       },
       {
-        desc: "INSERT with RETURNING (still mutation: command stays INSERT)",
+        desc: "INSERT with RETURNING (rows preserved)",
         res: { command: "INSERT", rows: [{ id: 99 }], rowCount: 1 },
+        expectedRows: [{ id: 99 }],
         expectedMessage: "Query OK, 1 rows affected.",
       },
       {
         desc: "UPDATE",
         res: { command: "UPDATE", rows: [], rowCount: 5 },
+        expectedRows: [],
         expectedMessage: "Query OK, 5 rows affected.",
       },
       {
         desc: "DELETE",
         res: { command: "DELETE", rows: [], rowCount: 3 },
+        expectedRows: [],
         expectedMessage: "Query OK, 3 rows affected.",
       },
       {
         desc: "CREATE TABLE",
         res: { command: "CREATE", rows: [], rowCount: null },
+        expectedRows: [],
         expectedMessage: "Query OK, 0 rows affected.",
       },
       {
         desc: "DROP TABLE",
         res: { command: "DROP", rows: [], rowCount: null },
+        expectedRows: [],
         expectedMessage: "Query OK, 0 rows affected.",
       },
       {
         desc: "ALTER TABLE",
         res: { command: "ALTER", rows: [], rowCount: null },
+        expectedRows: [],
         expectedMessage: "Query OK, 0 rows affected.",
       },
       {
         desc: "TRUNCATE",
         res: { command: "TRUNCATE", rows: [], rowCount: null },
+        expectedRows: [],
         expectedMessage: "Query OK, 0 rows affected.",
       },
       {
         desc: "SET",
         res: { command: "SET", rows: [], rowCount: null },
+        expectedRows: [],
         expectedMessage: "Query OK, 0 rows affected.",
       },
       {
         desc: "BEGIN",
         res: { command: "BEGIN", rows: [], rowCount: null },
+        expectedRows: [],
         expectedMessage: "Query OK, 0 rows affected.",
       },
       {
         desc: "COMMIT",
         res: { command: "COMMIT", rows: [], rowCount: null },
+        expectedRows: [],
         expectedMessage: "Query OK, 0 rows affected.",
       },
       {
         desc: "unknown command (defaults to mutation)",
         res: { command: "REINDEX", rows: [], rowCount: null },
+        expectedRows: [],
         expectedMessage: "Query OK, 0 rows affected.",
       },
       {
         desc: "missing command (defaults to mutation)",
         res: { rows: [], rowCount: null },
+        expectedRows: [],
         expectedMessage: "Query OK, 0 rows affected.",
       },
     ];
@@ -135,7 +148,7 @@ describe("classifyPgResult", () => {
       it(t.desc, () => {
         const out = classifyPgResult(t.res);
         expect(out.isMutation).toBe(true);
-        expect(out.rows).toEqual([]);
+        expect(out.rows).toEqual(t.expectedRows);
         expect(out.executionMessage).toBe(t.expectedMessage);
       });
     });
