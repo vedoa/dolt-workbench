@@ -14,7 +14,6 @@ import * as t from "../types";
 import * as qh from "./queries";
 import { changeSchema, getSchema, tableWithSchema } from "./utils";
 import { buildDeleteRow } from "../buildDeleteRow";
-import { PG_DIALECT } from "../dialect";
 import { classifyPgResult } from "./classifyResult";
 
 export class PostgresQueryFactory
@@ -148,8 +147,8 @@ export class PostgresQueryFactory
         if (args.schemaName) {
           await changeSchema(qr, args.schemaName);
         }
-        const built = buildDeleteRow({ ...args, schemaName }, PG_DIALECT);
-        const result = await qr.query(built.sql, built.params, true);
+        const built = buildDeleteRow(qr.manager, { ...args, schemaName });
+        const result = await built.execute();
         return {
           rowsAffected: result.affected ?? 0,
           queryString: built.displaySql,

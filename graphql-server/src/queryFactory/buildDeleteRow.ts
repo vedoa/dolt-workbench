@@ -1,4 +1,5 @@
-import { DialectInfo, formatValueLiteral } from "./dialect";
+import { DeleteResult, EntityManager } from "typeorm";
+import { interpolateForDisplay, supportsSchemas } from "./buildUtils";
 
 export type WhereClause = { column: string; value: string; type?: string };
 
@@ -10,31 +11,42 @@ export type DeleteRowArgs = {
 
 export type BuiltDelete = {
   sql: string;
-  params: string[];
+  params: unknown[];
   displaySql: string;
+  execute: () => Promise<DeleteResult>;
 };
 
 export function buildDeleteRow(
+  em: EntityManager,
   args: DeleteRowArgs,
-  dialect: DialectInfo,
 ): BuiltDelete {
   if (args.where.length === 0) {
     throw new Error("deleteRow requires at least one where clause");
   }
-  const table = dialect.qualifyTable(args.tableName, args.schemaName);
-  const whereSql = args.where
-    .map((w, i) => `${dialect.quoteId(w.column)} = ${dialect.placeholder(i)}`)
-    .join(" AND ");
-  const sql = `DELETE FROM ${table} WHERE ${whereSql}`;
-  const params = args.where.map(w => w.value);
 
-  const displayWhere = args.where
-    .map(
-      w =>
-        `${dialect.quoteId(w.column)} = ${formatValueLiteral(w.value, w.type, dialect)}`,
-    )
-    .join(" AND ");
-  const displaySql = `DELETE FROM ${table} WHERE ${displayWhere}`;
+  const target =
+    supportsSchemas(em) && args.schemaName
+      ? `${args.schemaName}.${args.tableName}`
+      : args.tableName;
 
-  return { sql, params, displaySql };
+  const escape = em.connection.driver.escape.bind(em.connection.driver);
+  const namedParams: Record<string, string> = {};
+  const conditions = args.where
+    .map((w, i) => {
+      const key = `p${i}`;
+      namedParams[key] = w.value;
+      return `${escape(w.column)} = :${key}`;
+    })
+    .join(" AND ");
+
+  const qb = em
+    .createQueryBuilder()
+    .delete()
+    .from(target)
+    .where(conditions, namedParams);
+
+  const [sql, params] = qb.getQueryAndParameters();
+  const displaySql = interpolateForDisplay(sql, params, args.where);
+
+  return { sql, params, displaySql, execute: async () => qb.execute() };
 }

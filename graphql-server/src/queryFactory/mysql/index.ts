@@ -6,7 +6,6 @@ import { TableDetails } from "../../tables/table.model";
 import { BaseQueryFactory } from "../base";
 import * as t from "../types";
 import { buildDeleteRow } from "../buildDeleteRow";
-import { MYSQL_DIALECT } from "../dialect";
 import { classifyMysqlResult } from "./classifyResult";
 import * as qh from "./queries";
 import {
@@ -149,10 +148,10 @@ export class MySQLQueryFactory
       where: Array<{ column: string; value: string; type?: string }>;
     },
   ): Promise<{ rowsAffected: number; queryString: string }> {
-    const built = buildDeleteRow(args, MYSQL_DIALECT);
     return this.queryQR(
       async qr => {
-        const result = await qr.query(built.sql, built.params, true);
+        const built = buildDeleteRow(qr.manager, args);
+        const result = await built.execute();
         return {
           rowsAffected: result.affected ?? 0,
           queryString: built.displaySql,
