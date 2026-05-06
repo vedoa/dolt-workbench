@@ -73,7 +73,7 @@ export declare class QueryFactory {
 
   getSqlSelect(
     args: t.RefMaybeSchemaArgs & { queryString: string },
-  ): Promise<{ rows: t.RawRows; warnings?: string[] }>;
+  ): Promise<t.SqlSelectResult>;
 
   getSchemas(
     args: t.RefMaybeSchemaArgs,

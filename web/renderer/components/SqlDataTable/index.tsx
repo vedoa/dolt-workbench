@@ -28,13 +28,14 @@ type InnerProps = Props & {
 };
 
 function Inner(props: InnerProps) {
-  const isMut = useSqlQuery(props.params, props.client, props.error);
+  useSqlQuery(props.params, props.client, props.state.isMutation, props.error);
   const msg = (
     <SqlMessage
       params={props.params}
       gqlError={props.error}
       executionMessage={props.state.executionMessage}
       executionStatus={props.state.executionStatus}
+      isMutation={props.state.isMutation}
       rowsLen={props.state.rows.length}
     />
   );
@@ -51,9 +52,10 @@ function Inner(props: InnerProps) {
           hasMore={props.hasMore}
         />
       </DataTableLayout>
-      {isMut && !isReadOnlyDatabaseRevisionError(props.error) && (
-        <WorkingDiff {...props} />
-      )}
+      {props.state.isMutation &&
+        !isReadOnlyDatabaseRevisionError(props.error) && (
+          <WorkingDiff {...props} />
+        )}
     </>
   );
 }
