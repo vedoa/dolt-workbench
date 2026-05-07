@@ -5,7 +5,8 @@ import { SchemaItem } from "../../schemas/schema.model";
 import { TableDetails } from "../../tables/table.model";
 import { BaseQueryFactory } from "../base";
 import * as t from "../types";
-import { buildDeleteRow } from "../buildDeleteRow";
+import { buildDeleteRow } from "../build/buildDeleteRow";
+import { mutationExecutionMessage } from "../build/buildUtils";
 import { classifyMysqlResult } from "./classifyResult";
 import * as qh from "./queries";
 import {
@@ -142,19 +143,16 @@ export class MySQLQueryFactory
     );
   }
 
-  async deleteRow(
-    args: t.RefArgs & {
-      tableName: string;
-      where: Array<{ column: string; value: string; type?: string }>;
-    },
-  ): Promise<{ rowsAffected: number; queryString: string }> {
+  async deleteRow(args: t.DeleteRowArgs): Promise<t.MutationResult> {
     return this.queryQR(
       async qr => {
-        const built = buildDeleteRow(qr.manager, args);
+        const built = buildDeleteRow(qr.manager, args.tableName, args.where);
         const result = await built.execute();
+        const rowsAffected = result.affected ?? 0;
         return {
-          rowsAffected: result.affected ?? 0,
+          rowsAffected,
           queryString: built.displaySql,
+          executionMessage: mutationExecutionMessage(rowsAffected),
         };
       },
       args.databaseName,

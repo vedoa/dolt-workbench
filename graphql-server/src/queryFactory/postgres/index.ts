@@ -13,7 +13,8 @@ import {
 import * as t from "../types";
 import * as qh from "./queries";
 import { changeSchema, getSchema, tableWithSchema } from "./utils";
-import { buildDeleteRow } from "../buildDeleteRow";
+import { buildDeleteRow } from "../build/buildDeleteRow";
+import { mutationExecutionMessage } from "../build/buildUtils";
 import { classifyPgResult } from "./classifyResult";
 
 export class PostgresQueryFactory
@@ -135,23 +136,21 @@ export class PostgresQueryFactory
     );
   }
 
-  async deleteRow(
-    args: t.RefMaybeSchemaArgs & {
-      tableName: string;
-      where: Array<{ column: string; value: string; type?: string }>;
-    },
-  ): Promise<{ rowsAffected: number; queryString: string }> {
+  async deleteRow(args: t.DeleteRowArgs): Promise<t.MutationResult> {
     return this.queryQR(
       async qr => {
         const schemaName = await getSchema(qr, args);
-        if (args.schemaName) {
-          await changeSchema(qr, args.schemaName);
-        }
-        const built = buildDeleteRow(qr.manager, { ...args, schemaName });
+        const target = tableWithSchema({
+          tableName: args.tableName,
+          schemaName,
+        });
+        const built = buildDeleteRow(qr.manager, target, args.where);
         const result = await built.execute();
+        const rowsAffected = result.affected ?? 0;
         return {
-          rowsAffected: result.affected ?? 0,
+          rowsAffected,
           queryString: built.displaySql,
+          executionMessage: mutationExecutionMessage(rowsAffected),
         };
       },
       args.databaseName,

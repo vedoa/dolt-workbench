@@ -6,6 +6,7 @@ import { BiPencil } from "@react-icons/all-files/bi/BiPencil";
 import dynamic from "next/dynamic";
 import Buttons from "./Buttons";
 import Errors from "./Errors";
+import ExecutionMessage from "./ExecutionMessage";
 import css from "./index.module.css";
 import { useSqlStrings } from "./useSqlStrings";
 
@@ -62,6 +63,7 @@ export default function DatabaseTableHeader(props: Props) {
           </div>
         </Btn>
       )}
+      <ExecutionMessage />
       <Errors />
     </div>
   );

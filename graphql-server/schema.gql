@@ -287,6 +287,7 @@ type RowDiffList {
 type MutationResult {
   rowsAffected: Int!
   queryString: String!
+  executionMessage: String!
 }
 
 type TextDiff {
@@ -509,7 +510,7 @@ input AuthorInfo {
 
 input WhereClause {
   column: String!
-  value: String!
+  value: String
   type: String
 }
 

@@ -26,6 +26,9 @@ export function SqlEditorProvider(props: Props) {
   const [showSqlEditor, setShowSqlEditor] = useState(isMobile);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useApolloError(undefined);
+  const [executionMessage, setExecutionMessage] = useState<string | undefined>(
+    undefined,
+  );
   const [modalState, setModalState] = useSetState({
     errorIsOpen: false,
   });
@@ -113,6 +116,8 @@ export function SqlEditorProvider(props: Props) {
       queryClickHandler,
       error: err,
       setError,
+      executionMessage,
+      setExecutionMessage,
       loading,
       modalState,
       setModalState,
@@ -126,6 +131,7 @@ export function SqlEditorProvider(props: Props) {
     queryClickHandler,
     err,
     setError,
+    executionMessage,
     loading,
     modalState,
     setModalState,

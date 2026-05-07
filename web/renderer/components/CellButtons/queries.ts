@@ -17,6 +17,7 @@ export const DELETE_ROW = gql`
     ) {
       rowsAffected
       queryString
+      executionMessage
     }
   }
 `;

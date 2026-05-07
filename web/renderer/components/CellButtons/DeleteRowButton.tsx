@@ -22,7 +22,8 @@ type Props = {
 };
 
 export default function DeleteRowButton(props: Props): JSX.Element | null {
-  const { setEditorString, setError } = useSqlEditorContext();
+  const { setEditorString, setError, setExecutionMessage } =
+    useSqlEditorContext();
   const { params, columns } = useDataTableContext();
   const { tableName, schemaName, databaseName } = params;
   const refName = props.refName ?? params.refName;
@@ -38,8 +39,9 @@ export default function DeleteRowButton(props: Props): JSX.Element | null {
     const res = await deleteRow({
       variables: { databaseName, refName, schemaName, tableName, where },
     });
-    if (res.success && res.data?.deleteRow.queryString) {
+    if (res.success && res.data?.deleteRow) {
       setEditorString(res.data.deleteRow.queryString);
+      setExecutionMessage(res.data.deleteRow.executionMessage);
       client
         .refetchQueries(refetchUpdateDatabaseQueriesCacheEvict)
         .catch(console.error);

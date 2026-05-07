@@ -49,14 +49,7 @@ export function fromSqlSelectRow(
   offset: number,
   warnings?: string[],
 ): SqlSelect {
-  // eslint-disable-next-line no-console
-  console.log("[isMutation-probe]", {
-    queryString: queryString.slice(0, 120),
-    isMutation,
-    rowCount: doltRows.length,
-    executionMessage,
-    sample: doltRows.length > 0 ? Object.keys(doltRows[0]) : null,
-  });
+
   const res = {
     _id: `/databases/${databaseName}/refs/${refName}/queries/${queryString}`,
     databaseName,

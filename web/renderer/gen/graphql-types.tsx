@@ -428,6 +428,7 @@ export type MutationSaveTestsArgs = {
 
 export type MutationResult = {
   __typename?: 'MutationResult';
+  executionMessage: Scalars['String']['output'];
   queryString: Scalars['String']['output'];
   rowsAffected: Scalars['Int']['output'];
 };
@@ -1032,7 +1033,7 @@ export type TextDiff = {
 export type WhereClause = {
   column: Scalars['String']['input'];
   type?: InputMaybe<Scalars['String']['input']>;
-  value: Scalars['String']['input'];
+  value?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type WorkingDiff = {
@@ -1050,7 +1051,7 @@ export type DeleteRowMutationVariables = Exact<{
 }>;
 
 
-export type DeleteRowMutation = { __typename?: 'Mutation', deleteRow: { __typename?: 'MutationResult', rowsAffected: number, queryString: string } };
+export type DeleteRowMutation = { __typename?: 'Mutation', deleteRow: { __typename?: 'MutationResult', rowsAffected: number, queryString: string, executionMessage: string } };
 
 export type CreateDatabaseMutationVariables = Exact<{
   databaseName: Scalars['String']['input'];
@@ -2280,6 +2281,7 @@ export const DeleteRowDocument = gql`
   ) {
     rowsAffected
     queryString
+    executionMessage
   }
 }
     `;

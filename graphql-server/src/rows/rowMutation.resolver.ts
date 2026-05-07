@@ -16,8 +16,8 @@ export class WhereClause {
   @Field()
   column: string;
 
-  @Field()
-  value: string;
+  @Field({ nullable: true })
+  value?: string;
 
   @Field({ nullable: true })
   type?: string;
@@ -30,6 +30,9 @@ export class MutationResult {
 
   @Field()
   queryString: string;
+
+  @Field()
+  executionMessage: string;
 }
 
 @ArgsType()
