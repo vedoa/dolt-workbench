@@ -450,7 +450,7 @@ export type MutationUpdateRowArgs = {
   schemaName?: InputMaybe<Scalars['String']['input']>;
   set: Array<ColumnValueInput>;
   tableName: Scalars['String']['input'];
-  where: Array<WhereClause>;
+  where: Array<ColumnValueInput>;
 };
 
 export type MutationResult = {
@@ -1101,7 +1101,7 @@ export type UpdateRowMutationVariables = Exact<{
   schemaName?: InputMaybe<Scalars['String']['input']>;
   tableName: Scalars['String']['input'];
   set: Array<ColumnValueInput> | ColumnValueInput;
-  where: Array<WhereClause> | WhereClause;
+  where: Array<ColumnValueInput> | ColumnValueInput;
 }>;
 
 
@@ -2426,7 +2426,7 @@ export type InsertRowMutationHookResult = ReturnType<typeof useInsertRowMutation
 export type InsertRowMutationResult = Apollo.MutationResult<InsertRowMutation>;
 export type InsertRowMutationOptions = Apollo.BaseMutationOptions<InsertRowMutation, InsertRowMutationVariables>;
 export const UpdateRowDocument = gql`
-    mutation UpdateRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $set: [ColumnValueInput!]!, $where: [WhereClause!]!) {
+    mutation UpdateRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $set: [ColumnValueInput!]!, $where: [ColumnValueInput!]!) {
   updateRow(
     databaseName: $databaseName
     refName: $refName
