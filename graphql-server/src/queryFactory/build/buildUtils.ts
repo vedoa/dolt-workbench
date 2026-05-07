@@ -54,28 +54,14 @@ const PLACEHOLDER_PATTERN = /\$\d+|\?/g;
 
 export function interpolateForDisplay(
   sql: string,
-  params: unknown[],
+  params: string[],
   types: Array<{ type?: string }>,
 ): string {
   let i = 0;
   return sql.replace(PLACEHOLDER_PATTERN, () => {
-    const raw = params[i];
+    const value = params[i];
     const type = types[i]?.type;
     i += 1;
-    return formatValueLiteral(paramToString(raw), type);
+    return formatValueLiteral(value, type);
   });
-}
-
-function paramToString(raw: unknown): string | null {
-  if (raw === null || raw === undefined) return null;
-  if (typeof raw === "string") return raw;
-  if (
-    typeof raw === "number" ||
-    typeof raw === "boolean" ||
-    typeof raw === "bigint"
-  ) {
-    return String(raw);
-  }
-  if (raw instanceof Date) return raw.toISOString();
-  return JSON.stringify(raw);
 }

@@ -4,7 +4,7 @@ import { interpolateForDisplay } from "./buildUtils";
 
 export type BuiltDelete = {
   sql: string;
-  params: unknown[];
+  params: string[];
   displaySql: string;
   execute: () => Promise<DeleteResult>;
 };
@@ -43,7 +43,7 @@ export function buildDeleteRow(
     .from(target)
     .where(conditions, namedParams);
 
-  const [sql, params] = qb.getQueryAndParameters();
+  const [sql, params] = qb.getQueryAndParameters() as [string, string[]];
   const displaySql = interpolateForDisplay(sql, params, paramTypes);
 
   return { sql, params, displaySql, execute: async () => qb.execute() };
