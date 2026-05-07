@@ -48,10 +48,11 @@ export default function Row(props: Props) {
           </CellDropdown>
         )}
       </td>
-      {props.row.columnValues.map((c, cidx) => (
-        // eslint-disable-next-line react/jsx-key
-        <Cell {...props} cell={c} cidx={cidx} />
-      ))}
+      {props.row.columnValues
+        .slice(0, props.columns.length)
+        .map((cell, cidx) => (
+          <Cell key={cidx} {...props} cell={cell} cidx={cidx} />
+        ))}
     </tr>
   );
 }

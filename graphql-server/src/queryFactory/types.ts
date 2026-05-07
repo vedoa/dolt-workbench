@@ -98,6 +98,15 @@ export type UpdateRowArgs = RefMaybeSchemaArgs & {
   where: ColumnValue[];
 };
 
+export type DropColumnArgs = RefMaybeSchemaArgs & {
+  tableName: string;
+  columnName: string;
+};
+
+export type DropTableArgs = RefMaybeSchemaArgs & {
+  tableName: string;
+};
+
 export type MutationResult = {
   rowsAffected: number;
   queryString: string;
