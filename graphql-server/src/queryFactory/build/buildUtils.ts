@@ -50,7 +50,6 @@ export function formatValueLiteral(
   return escapeStringLiteral(value);
 }
 
-
 const PLACEHOLDER_PATTERN = /\$\d+|\?/g;
 
 export function interpolateForDisplay(

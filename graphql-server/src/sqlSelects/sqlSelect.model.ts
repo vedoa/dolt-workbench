@@ -49,7 +49,6 @@ export function fromSqlSelectRow(
   offset: number,
   warnings?: string[],
 ): SqlSelect {
-
   const res = {
     _id: `/databases/${databaseName}/refs/${refName}/queries/${queryString}`,
     databaseName,
