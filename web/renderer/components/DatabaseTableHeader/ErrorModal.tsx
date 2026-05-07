@@ -14,7 +14,7 @@ export default function ErrorModal(props: Props) {
   };
 
   return (
-    <Modal isOpen={props.isOpen} onRequestClose={onClose} title="Query error">
+    <Modal isOpen={props.isOpen} onRequestClose={onClose} title="Query Error">
       <div data-cy="error-modal">
         <QueryError err={error} />
       </div>
