@@ -1,3 +1,4 @@
+import { mutationExecutionMessage } from "../build/buildUtils";
 import * as t from "../types";
 
 export type MysqlOkPacket = {
@@ -31,11 +32,10 @@ export function classifyMysqlResult(
     return { rows: result.records, isMutation: false, executionMessage: "" };
   }
   const info: string = isOkPacket(result.raw) ? (result.raw.info ?? "") : "";
+  const suffix = info.length > 0 ? info.replace("#", " ") : "";
   return {
     rows: [],
     isMutation: true,
-    executionMessage: `Query OK, ${
-      result.affected ?? 0
-    } rows affected.${info.length > 0 ? info.replace("#", " ") : ""}`,
+    executionMessage: `${mutationExecutionMessage(result.affected ?? 0)}${suffix}`,
   };
 }

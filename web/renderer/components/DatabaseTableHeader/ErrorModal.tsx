@@ -1,5 +1,5 @@
 import { useSqlEditorContext } from "@contexts/sqleditor";
-import { ErrorMsg, Modal } from "@dolthub/react-components";
+import { ErrorMsg, ModalInner, ModalOuter } from "@dolthub/react-components";
 import { ModalProps } from "@lib/modalProps";
 import css from "./index.module.css";
 
@@ -14,11 +14,18 @@ export default function ErrorModal(props: Props) {
   };
 
   return (
-    <Modal isOpen={props.isOpen} onRequestClose={onClose} title="Query error">
-      <div data-cy="error-modal">
-        <QueryError err={error} />
-      </div>
-    </Modal>
+    <ModalOuter
+      isOpen={props.isOpen}
+      onRequestClose={onClose}
+      title="Query Error"
+    >
+      <ModalInner>
+        <div data-cy="error-modal">
+          <QueryError err={error} />
+        </div>
+      </ModalInner>
+      <div className={css.modalFooterSpacer} />
+    </ModalOuter>
   );
 }
 

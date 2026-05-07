@@ -76,6 +76,24 @@ export type USPR = Promise<RawRow | undefined>;
 export type Params = Array<string | number | undefined> | undefined;
 export type ParQuery = (q: string, p?: Params) => PR;
 
+export type WhereClause = {
+  column: string;
+  // null/undefined means `IS NULL` — see buildDeleteRow.
+  value?: string | null;
+  type?: string;
+};
+
+export type DeleteRowArgs = RefMaybeSchemaArgs & {
+  tableName: string;
+  where: WhereClause[];
+};
+
+export type MutationResult = {
+  rowsAffected: number;
+  queryString: string;
+  executionMessage: string;
+};
+
 export type TableRowPagination = { pkCols: string[]; offset: number };
 export type DiffRes = Promise<{ colsUnion: RawRows; diff: RawRows }>;
 export type CommitsRes = Promise<{ fromCommitId: string; toCommitId: string }>;

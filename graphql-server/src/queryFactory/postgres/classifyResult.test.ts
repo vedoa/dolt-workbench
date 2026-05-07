@@ -68,13 +68,13 @@ describe("classifyPgResult", () => {
         desc: "INSERT (no RETURNING)",
         res: { command: "INSERT", rows: [], rowCount: 1 },
         expectedRows: [],
-        expectedMessage: "Query OK, 1 rows affected.",
+        expectedMessage: "Query OK, 1 row affected.",
       },
       {
         desc: "INSERT with RETURNING (rows preserved)",
         res: { command: "INSERT", rows: [{ id: 99 }], rowCount: 1 },
         expectedRows: [{ id: 99 }],
-        expectedMessage: "Query OK, 1 rows affected.",
+        expectedMessage: "Query OK, 1 row affected.",
       },
       {
         desc: "UPDATE",

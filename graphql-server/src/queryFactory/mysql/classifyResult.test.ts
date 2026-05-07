@@ -71,7 +71,7 @@ describe("classifyMysqlResult", () => {
           records: [],
           affected: 1,
         },
-        expectedMessage: "Query OK, 1 rows affected.",
+        expectedMessage: "Query OK, 1 row affected.",
       },
       {
         desc: "UPDATE with info (replace # with space)",

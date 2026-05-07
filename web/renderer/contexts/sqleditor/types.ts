@@ -21,6 +21,8 @@ export type SqlEditorContextType = {
   queryClickHandler: (p: ExecuteProps) => Promise<void>;
   error?: ApolloErrorType;
   setError: (e: ApolloErrorType) => void;
+  executionMessage?: string;
+  setExecutionMessage: (m: string | undefined) => void;
   loading: boolean;
   modalState: ModalState;
   setModalState: Dispatch<Partial<ModalState>>;

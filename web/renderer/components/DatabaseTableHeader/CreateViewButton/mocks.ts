@@ -8,6 +8,7 @@ export const SqlEditorContextProviderValueMock = {
   executeQuery: addItem,
   queryClickHandler: jest.fn(),
   setError: jest.fn(),
+  setExecutionMessage: jest.fn(),
   loading: false,
   modalState: {
     forkIsOpen: false,
