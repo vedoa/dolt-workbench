@@ -1,8 +1,10 @@
+import { pluralize } from "@dolthub/web-utils";
+
 // Mirrors the format used by classifyMysqlResult/classifyPgResult so typed
 // mutations and the raw sqlSelect path produce the same execution-message
 // string for the editor's success line.
 export function mutationExecutionMessage(rowsAffected: number): string {
-  return `Query OK, ${rowsAffected} rows affected.`;
+  return `Query OK, ${rowsAffected} ${pluralize(rowsAffected, "row")} affected.`;
 }
 
 export function escapeStringLiteral(s: string): string {

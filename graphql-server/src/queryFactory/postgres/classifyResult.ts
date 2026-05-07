@@ -1,3 +1,4 @@
+import { mutationExecutionMessage } from "../build/buildUtils";
 import * as t from "../types";
 
 export const PG_READ_COMMANDS: ReadonlySet<string> = new Set([
@@ -28,6 +29,6 @@ export function classifyPgResult(res: PgQueryResult): ClassifiedResult {
   return {
     rows,
     isMutation: true,
-    executionMessage: `Query OK, ${res.rowCount ?? 0} rows affected.`,
+    executionMessage: mutationExecutionMessage(res.rowCount ?? 0),
   };
 }
