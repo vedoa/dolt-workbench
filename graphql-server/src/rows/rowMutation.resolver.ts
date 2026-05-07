@@ -23,6 +23,18 @@ export class WhereClause {
   type?: string;
 }
 
+@InputType()
+export class ColumnValueInput {
+  @Field()
+  column: string;
+
+  @Field({ nullable: true })
+  value?: string;
+
+  @Field({ nullable: true })
+  type?: string;
+}
+
 @ObjectType()
 export class MutationResult {
   @Field(_type => Int)
@@ -41,6 +53,12 @@ export class DeleteRowArgs extends TableMaybeSchemaArgs {
   where: WhereClause[];
 }
 
+@ArgsType()
+export class InsertRowArgs extends TableMaybeSchemaArgs {
+  @Field(_type => [ColumnValueInput])
+  values: ColumnValueInput[];
+}
+
 @Resolver()
 export class RowMutationResolver {
   constructor(private readonly conn: ConnectionProvider) {}
@@ -49,5 +67,11 @@ export class RowMutationResolver {
   async deleteRow(@Args() args: DeleteRowArgs): Promise<MutationResult> {
     const conn = this.conn.connection();
     return conn.deleteRow(args);
+  }
+
+  @Mutation(_returns => MutationResult)
+  async insertRow(@Args() args: InsertRowArgs): Promise<MutationResult> {
+    const conn = this.conn.connection();
+    return conn.insertRow(args);
   }
 }

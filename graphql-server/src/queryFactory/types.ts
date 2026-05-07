@@ -83,9 +83,21 @@ export type WhereClause = {
   type?: string;
 };
 
+export type ColumnValue = {
+  column: string;
+  // null/undefined means `NULL` — see buildInsertRow.
+  value?: string | null;
+  type?: string;
+};
+
 export type DeleteRowArgs = RefMaybeSchemaArgs & {
   tableName: string;
   where: WhereClause[];
+};
+
+export type InsertRowArgs = RefMaybeSchemaArgs & {
+  tableName: string;
+  values: ColumnValue[];
 };
 
 export type MutationResult = {

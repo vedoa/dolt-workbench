@@ -74,6 +74,12 @@ export type ColumnValue = {
   displayValue: Scalars['String']['output'];
 };
 
+export type ColumnValueInput = {
+  column: Scalars['String']['input'];
+  type?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type Commit = {
   __typename?: 'Commit';
   _id: Scalars['ID']['output'];
@@ -253,6 +259,7 @@ export type Mutation = {
   deleteTag: Scalars['Boolean']['output'];
   doltClone: Scalars['Boolean']['output'];
   fetchRemote: FetchRes;
+  insertRow: MutationResult;
   loadDataFile: Scalars['Boolean']['output'];
   mergeAndResolveConflicts: Scalars['Boolean']['output'];
   mergePull: Scalars['Boolean']['output'];
@@ -355,6 +362,15 @@ export type MutationDoltCloneArgs = {
 export type MutationFetchRemoteArgs = {
   databaseName: Scalars['String']['input'];
   remoteName: Scalars['String']['input'];
+};
+
+
+export type MutationInsertRowArgs = {
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  values: Array<ColumnValueInput>;
 };
 
 
@@ -1052,6 +1068,17 @@ export type DeleteRowMutationVariables = Exact<{
 
 
 export type DeleteRowMutation = { __typename?: 'Mutation', deleteRow: { __typename?: 'MutationResult', rowsAffected: number, queryString: string, executionMessage: string } };
+
+export type InsertRowMutationVariables = Exact<{
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  values: Array<ColumnValueInput> | ColumnValueInput;
+}>;
+
+
+export type InsertRowMutation = { __typename?: 'Mutation', insertRow: { __typename?: 'MutationResult', rowsAffected: number, queryString: string, executionMessage: string } };
 
 export type CreateDatabaseMutationVariables = Exact<{
   databaseName: Scalars['String']['input'];
@@ -2315,6 +2342,51 @@ export function useDeleteRowMutation(baseOptions?: Apollo.MutationHookOptions<De
 export type DeleteRowMutationHookResult = ReturnType<typeof useDeleteRowMutation>;
 export type DeleteRowMutationResult = Apollo.MutationResult<DeleteRowMutation>;
 export type DeleteRowMutationOptions = Apollo.BaseMutationOptions<DeleteRowMutation, DeleteRowMutationVariables>;
+export const InsertRowDocument = gql`
+    mutation InsertRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $values: [ColumnValueInput!]!) {
+  insertRow(
+    databaseName: $databaseName
+    refName: $refName
+    schemaName: $schemaName
+    tableName: $tableName
+    values: $values
+  ) {
+    rowsAffected
+    queryString
+    executionMessage
+  }
+}
+    `;
+export type InsertRowMutationFn = Apollo.MutationFunction<InsertRowMutation, InsertRowMutationVariables>;
+
+/**
+ * __useInsertRowMutation__
+ *
+ * To run a mutation, you first call `useInsertRowMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useInsertRowMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [insertRowMutation, { data, loading, error }] = useInsertRowMutation({
+ *   variables: {
+ *      databaseName: // value for 'databaseName'
+ *      refName: // value for 'refName'
+ *      schemaName: // value for 'schemaName'
+ *      tableName: // value for 'tableName'
+ *      values: // value for 'values'
+ *   },
+ * });
+ */
+export function useInsertRowMutation(baseOptions?: Apollo.MutationHookOptions<InsertRowMutation, InsertRowMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<InsertRowMutation, InsertRowMutationVariables>(InsertRowDocument, options);
+      }
+export type InsertRowMutationHookResult = ReturnType<typeof useInsertRowMutation>;
+export type InsertRowMutationResult = Apollo.MutationResult<InsertRowMutation>;
+export type InsertRowMutationOptions = Apollo.BaseMutationOptions<InsertRowMutation, InsertRowMutationVariables>;
 export const CreateDatabaseDocument = gql`
     mutation CreateDatabase($databaseName: String!) {
   createDatabase(databaseName: $databaseName)

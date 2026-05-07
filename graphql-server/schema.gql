@@ -479,6 +479,7 @@ type Mutation {
   fetchRemote(databaseName: String!, remoteName: String!): FetchRes!
   createBranchFromRemote(remoteName: String!, databaseName: String!, branchName: String!): FetchRes!
   deleteRow(schemaName: String, tableName: String!, refName: String!, databaseName: String!, where: [WhereClause!]!): MutationResult!
+  insertRow(schemaName: String, tableName: String!, refName: String!, databaseName: String!, values: [ColumnValueInput!]!): MutationResult!
   restoreAllTables(databaseName: String!, refName: String!): Boolean!
   createTag(tagName: String!, databaseName: String!, message: String, fromRefName: String!, author: AuthorInfo): String!
   deleteTag(databaseName: String!, tagName: String!): Boolean!
@@ -509,6 +510,12 @@ input AuthorInfo {
 }
 
 input WhereClause {
+  column: String!
+  value: String
+  type: String
+}
+
+input ColumnValueInput {
   column: String!
   value: String
   type: String

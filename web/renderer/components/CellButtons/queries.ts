@@ -21,3 +21,25 @@ export const DELETE_ROW = gql`
     }
   }
 `;
+
+export const INSERT_ROW = gql`
+  mutation InsertRow(
+    $databaseName: String!
+    $refName: String!
+    $schemaName: String
+    $tableName: String!
+    $values: [ColumnValueInput!]!
+  ) {
+    insertRow(
+      databaseName: $databaseName
+      refName: $refName
+      schemaName: $schemaName
+      tableName: $tableName
+      values: $values
+    ) {
+      rowsAffected
+      queryString
+      executionMessage
+    }
+  }
+`;
