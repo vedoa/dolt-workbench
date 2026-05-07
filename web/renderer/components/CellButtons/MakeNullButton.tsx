@@ -1,33 +1,38 @@
 import HideForNoWritesWrapper from "@components/util/HideForNoWritesWrapper";
+import { useApolloClient } from "@apollo/client";
 import { useDataTableContext } from "@contexts/dataTable";
 import { useSqlEditorContext } from "@contexts/sqleditor";
 import { Button } from "@dolthub/react-components";
 import {
   ColumnForDataTableFragment,
   RowForDataTableFragment,
+  useUpdateRowMutation,
 } from "@gen/graphql-types";
-import useSqlBuilder from "@hooks/useSqlBuilder";
+import useMutation from "@hooks/useMutation";
 import { isUneditableDoltSystemTable } from "@lib/doltSystemTables";
+import { refetchUpdateDatabaseQueriesCacheEvict } from "@lib/refetchQueries";
 import css from "./index.module.css";
-import { pksAreShowing, toPKColsMapQueryCols } from "./utils";
+import { pksAreShowing, toPKWhereClauses } from "./utils";
 
 type Props = {
   currCol: ColumnForDataTableFragment;
   queryCols: ColumnForDataTableFragment[];
   row: RowForDataTableFragment;
-  setQuery?: (s: string) => void;
   isNull: boolean;
   refName?: string;
 };
 
 export default function MakeNullButton(props: Props): JSX.Element | null {
-  const { executeQuery, setEditorString } = useSqlEditorContext();
+  const { setEditorString, setError, setExecutionMessage } =
+    useSqlEditorContext();
   const { params, columns } = useDataTableContext();
-  const { tableName } = params;
+  const { tableName, schemaName, databaseName } = params;
+  const refName = props.refName ?? params.refName;
+  const client = useApolloClient();
+  const { mutateFn: updateRow } = useMutation({ hook: useUpdateRowMutation });
   const notNullConstraint = !!props.currCol.constraints?.some(
     con => con.notNull,
   );
-  const { updateTableMakeNullQuery } = useSqlBuilder();
 
   if (
     !tableName ||
@@ -38,20 +43,22 @@ export default function MakeNullButton(props: Props): JSX.Element | null {
   }
 
   const onClick = async () => {
-    const query = updateTableMakeNullQuery(
-      tableName,
-      props.currCol.name,
-      toPKColsMapQueryCols(props.row, props.queryCols, columns),
-    );
-    if (props.setQuery) {
-      props.setQuery(query);
-    }
-    setEditorString(query);
-    await executeQuery({
-      ...params,
-      refName: props.refName ?? params.refName,
-      query,
+    const where = toPKWhereClauses(props.row, props.queryCols, columns);
+    const set = [
+      { column: props.currCol.name, value: null, type: props.currCol.type },
+    ];
+    const res = await updateRow({
+      variables: { databaseName, refName, schemaName, tableName, set, where },
     });
+    if (res.success && res.data?.updateRow) {
+      setEditorString(res.data.updateRow.queryString);
+      setExecutionMessage(res.data.updateRow.executionMessage);
+      client
+        .refetchQueries(refetchUpdateDatabaseQueriesCacheEvict)
+        .catch(console.error);
+    } else if (res.error) {
+      setError(res.error);
+    }
   };
 
   return (

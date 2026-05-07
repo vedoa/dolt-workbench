@@ -92,6 +92,12 @@ export type InsertRowArgs = RefMaybeSchemaArgs & {
   values: ColumnValue[];
 };
 
+export type UpdateRowArgs = RefMaybeSchemaArgs & {
+  tableName: string;
+  set: ColumnValue[];
+  where: ColumnValue[];
+};
+
 export type MutationResult = {
   rowsAffected: number;
   queryString: string;

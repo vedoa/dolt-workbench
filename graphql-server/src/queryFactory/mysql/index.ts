@@ -7,6 +7,7 @@ import { BaseQueryFactory } from "../base";
 import * as t from "../types";
 import { buildDeleteRow } from "../build/buildDeleteRow";
 import { buildInsertRow } from "../build/buildInsertRow";
+import { buildUpdateRow } from "../build/buildUpdateRow";
 import { mutationExecutionMessage } from "../build/buildUtils";
 import { classifyMysqlResult } from "./classifyResult";
 import * as qh from "./queries";
@@ -182,6 +183,28 @@ export class MySQLQueryFactory
     return this.queryQR(
       async qr =>
         buildInsertRow(qr.manager, args.tableName, args.values).displaySql,
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async updateRow(args: t.UpdateRowArgs): Promise<t.MutationResult> {
+    return this.queryQR(
+      async qr => {
+        const built = buildUpdateRow(
+          qr.manager,
+          args.tableName,
+          args.set,
+          args.where,
+        );
+        const result = await built.execute();
+        const rowsAffected = result.affected ?? 0;
+        return {
+          rowsAffected,
+          queryString: built.displaySql,
+          executionMessage: mutationExecutionMessage(rowsAffected),
+        };
+      },
       args.databaseName,
       args.refName,
     );

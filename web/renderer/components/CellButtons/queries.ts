@@ -43,3 +43,27 @@ export const INSERT_ROW = gql`
     }
   }
 `;
+
+export const UPDATE_ROW = gql`
+  mutation UpdateRow(
+    $databaseName: String!
+    $refName: String!
+    $schemaName: String
+    $tableName: String!
+    $set: [ColumnValueInput!]!
+    $where: [ColumnValueInput!]!
+  ) {
+    updateRow(
+      databaseName: $databaseName
+      refName: $refName
+      schemaName: $schemaName
+      tableName: $tableName
+      set: $set
+      where: $where
+    ) {
+      rowsAffected
+      queryString
+      executionMessage
+    }
+  }
+`;

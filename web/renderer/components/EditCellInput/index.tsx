@@ -1,4 +1,5 @@
-import { toPKColsMapQueryCols } from "@components/CellButtons/utils";
+import { toPKWhereClauses } from "@components/CellButtons/utils";
+import { useApolloClient } from "@apollo/client";
 import { useDataTableContext } from "@contexts/dataTable";
 import { useSqlEditorContext } from "@contexts/sqleditor";
 import { Btn, SmallLoader } from "@dolthub/react-components";
@@ -6,9 +7,11 @@ import { isNullValue } from "@dolthub/web-utils";
 import {
   ColumnForDataTableFragment,
   RowForDataTableFragment,
+  useUpdateRowMutation,
 } from "@gen/graphql-types";
-import useSqlBuilder from "@hooks/useSqlBuilder";
+import useMutation from "@hooks/useMutation";
 import { getBitDisplayValue } from "@lib/dataTable";
+import { refetchUpdateDatabaseQueriesCacheEvict } from "@lib/refetchQueries";
 import { AiOutlineCheck } from "@react-icons/all-files/ai/AiOutlineCheck";
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
 import { BiText } from "@react-icons/all-files/bi/BiText";
@@ -30,16 +33,21 @@ type Props = {
 };
 
 export default function EditCellInput(props: Props) {
-  const { executeQuery, loading, setEditorString } = useSqlEditorContext();
+  const { setEditorString, setError, setExecutionMessage } =
+    useSqlEditorContext();
   const { params, columns } = useDataTableContext();
-  const { tableName } = params;
+  const { tableName, schemaName, databaseName } = params;
+  const refName = props.refName ?? params.refName;
+  const client = useApolloClient();
+  const { mutateFn: updateRow, loading } = useMutation({
+    hook: useUpdateRowMutation,
+  });
 
   const isNull = isNullValue(props.value);
   const inputType = getInputType(props.currentCol.type);
   const val = getDefaultVal(props.value, inputType);
   const [newValue, setNewValue] = useState(val);
   const [showTextarea, setShowTextarea] = useState(false);
-  const { updateTableQuery } = useSqlBuilder();
 
   if (!tableName) return null;
 
@@ -50,18 +58,27 @@ export default function EditCellInput(props: Props) {
       return;
     }
 
-    const query = updateTableQuery(
-      tableName,
-      props.currentCol.name,
-      newValue,
-      toPKColsMapQueryCols(props.row, props.queryCols, columns),
-    );
-    setEditorString(query);
-    await executeQuery({
-      ...params,
-      refName: props.refName ?? params.refName,
-      query,
+    const where = toPKWhereClauses(props.row, props.queryCols, columns);
+    const set = [
+      {
+        column: props.currentCol.name,
+        value: newValue,
+        type: props.currentCol.type,
+      },
+    ];
+    const res = await updateRow({
+      variables: { databaseName, refName, schemaName, tableName, set, where },
     });
+    if (res.success && res.data?.updateRow) {
+      setEditorString(res.data.updateRow.queryString);
+      setExecutionMessage(res.data.updateRow.executionMessage);
+      client
+        .refetchQueries(refetchUpdateDatabaseQueriesCacheEvict)
+        .catch(console.error);
+      props.cancelEditing();
+    } else if (res.error) {
+      setError(res.error);
+    }
   };
 
   return (
