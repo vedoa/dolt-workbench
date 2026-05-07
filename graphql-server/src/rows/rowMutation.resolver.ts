@@ -12,18 +12,6 @@ import { ConnectionProvider } from "../connections/connection.provider";
 import { TableMaybeSchemaArgs } from "../utils/commonTypes";
 
 @InputType()
-export class WhereClause {
-  @Field()
-  column: string;
-
-  @Field({ nullable: true })
-  value?: string;
-
-  @Field({ nullable: true })
-  type?: string;
-}
-
-@InputType()
 export class ColumnValueInput {
   @Field()
   column: string;
@@ -49,8 +37,8 @@ export class MutationResult {
 
 @ArgsType()
 export class DeleteRowArgs extends TableMaybeSchemaArgs {
-  @Field(_type => [WhereClause])
-  where: WhereClause[];
+  @Field(_type => [ColumnValueInput])
+  where: ColumnValueInput[];
 }
 
 @ArgsType()

@@ -76,23 +76,15 @@ export type USPR = Promise<RawRow | undefined>;
 export type Params = Array<string | number | undefined> | undefined;
 export type ParQuery = (q: string, p?: Params) => PR;
 
-export type WhereClause = {
-  column: string;
-  // null/undefined means `IS NULL` — see buildDeleteRow.
-  value?: string | null;
-  type?: string;
-};
-
 export type ColumnValue = {
   column: string;
-  // null/undefined means `NULL` — see buildInsertRow.
   value?: string | null;
   type?: string;
 };
 
 export type DeleteRowArgs = RefMaybeSchemaArgs & {
   tableName: string;
-  where: WhereClause[];
+  where: ColumnValue[];
 };
 
 export type InsertRowArgs = RefMaybeSchemaArgs & {

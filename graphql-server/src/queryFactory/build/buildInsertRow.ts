@@ -1,6 +1,10 @@
 import { EntityManager, InsertResult } from "typeorm";
 import { ColumnValue } from "../types";
-import { interpolateForDisplay } from "./buildUtils";
+import {
+  buildColumnValueMap,
+  interpolateForDisplay,
+  newParamAccumulator,
+} from "./buildUtils";
 
 export type BuiltInsert = {
   sql: string;
@@ -9,8 +13,6 @@ export type BuiltInsert = {
   execute: () => Promise<InsertResult>;
 };
 
-// `target` is the unquoted (optionally schema.table) form. TypeORM splits on
-// `.` and applies the driver's identifier escape per part.
 export function buildInsertRow(
   em: EntityManager,
   target: string,
@@ -20,32 +22,18 @@ export function buildInsertRow(
     throw new Error("insertRow requires at least one column value");
   }
 
-  const namedParams: Record<string, string> = {};
-  const paramTypes: ColumnValue[] = [];
-  const colValues: Record<string, () => string> = {};
-  let paramIdx = 0;
-
-  values.forEach(v => {
-    if (v.value === null || v.value === undefined) {
-      colValues[v.column] = () => "NULL";
-      return;
-    }
-    const key = `p${paramIdx}`;
-    paramIdx += 1;
-    namedParams[key] = v.value;
-    paramTypes.push(v);
-    colValues[v.column] = () => `:${key}`;
-  });
+  const acc = newParamAccumulator();
+  const colValues = buildColumnValueMap(values, acc);
 
   const qb = em
     .createQueryBuilder()
     .insert()
     .into(target)
     .values(colValues)
-    .setParameters(namedParams);
+    .setParameters(acc.namedParams);
 
   const [sql, params] = qb.getQueryAndParameters() as [string, string[]];
-  const displaySql = interpolateForDisplay(sql, params, paramTypes);
+  const displaySql = interpolateForDisplay(sql, params, acc.paramTypes);
 
   return { sql, params, displaySql, execute: async () => qb.execute() };
 }

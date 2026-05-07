@@ -32,7 +32,7 @@ type InnerProps = Props & {
 };
 
 function Inner(props: InnerProps) {
-  const { executeQuery, setEditorString, toggleSqlEditor } =
+  const { executeQuery, setEditorString, setError, toggleSqlEditor } =
     useSqlEditorContext();
   const { dropTable } = useSqlBuilder();
   const { columns } = useDataTableContext();
@@ -59,6 +59,8 @@ function Inner(props: InnerProps) {
     if (res.data?.previewInsertRow) {
       setEditorString(res.data.previewInsertRow);
       toggleSqlEditor(true);
+    } else if (res.error) {
+      setError(res.error);
     }
   };
 

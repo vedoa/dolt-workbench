@@ -1,8 +1,6 @@
 import { pluralize } from "@dolthub/web-utils";
+import { ColumnValue } from "../types";
 
-// Mirrors the format used by classifyMysqlResult/classifyPgResult so typed
-// mutations and the raw sqlSelect path produce the same execution-message
-// string for the editor's success line.
 export function mutationExecutionMessage(rowsAffected: number): string {
   return `Query OK, ${rowsAffected} ${pluralize(rowsAffected, "row")} affected.`;
 }
@@ -66,4 +64,52 @@ export function interpolateForDisplay(
     i += 1;
     return formatValueLiteral(value, type);
   });
+}
+
+export type ParamAccumulator = {
+  namedParams: Record<string, string>;
+  paramTypes: ColumnValue[];
+  idx: number;
+};
+
+export function newParamAccumulator(): ParamAccumulator {
+  return { namedParams: {}, paramTypes: [], idx: 0 };
+}
+
+export function buildWhereConditions(
+  conditions: ColumnValue[],
+  escape: (name: string) => string,
+  acc: ParamAccumulator,
+): string {
+  return conditions
+    .map(c => {
+      if (c.value === null || c.value === undefined) {
+        return `${escape(c.column)} IS NULL`;
+      }
+      const key = `p${acc.idx}`;
+      acc.idx += 1;
+      acc.namedParams[key] = c.value;
+      acc.paramTypes.push(c);
+      return `${escape(c.column)} = :${key}`;
+    })
+    .join(" AND ");
+}
+
+export function buildColumnValueMap(
+  values: ColumnValue[],
+  acc: ParamAccumulator,
+): Record<string, () => string> {
+  const map: Record<string, () => string> = {};
+  values.forEach(v => {
+    if (v.value === null || v.value === undefined) {
+      map[v.column] = () => "NULL";
+      return;
+    }
+    const key = `p${acc.idx}`;
+    acc.idx += 1;
+    acc.namedParams[key] = v.value;
+    acc.paramTypes.push(v);
+    map[v.column] = () => `:${key}`;
+  });
+  return map;
 }

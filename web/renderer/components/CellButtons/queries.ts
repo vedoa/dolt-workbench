@@ -6,7 +6,7 @@ export const DELETE_ROW = gql`
     $refName: String!
     $schemaName: String
     $tableName: String!
-    $where: [WhereClause!]!
+    $where: [ColumnValueInput!]!
   ) {
     deleteRow(
       databaseName: $databaseName

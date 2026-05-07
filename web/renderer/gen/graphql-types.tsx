@@ -342,7 +342,7 @@ export type MutationDeleteRowArgs = {
   refName: Scalars['String']['input'];
   schemaName?: InputMaybe<Scalars['String']['input']>;
   tableName: Scalars['String']['input'];
-  where: Array<WhereClause>;
+  where: Array<ColumnValueInput>;
 };
 
 
@@ -1056,12 +1056,6 @@ export type TextDiff = {
   rightLines: Scalars['String']['output'];
 };
 
-export type WhereClause = {
-  column: Scalars['String']['input'];
-  type?: InputMaybe<Scalars['String']['input']>;
-  value?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type WorkingDiff = {
   __typename?: 'WorkingDiff';
   diffColumnNames: Array<Scalars['String']['output']>;
@@ -1073,7 +1067,7 @@ export type DeleteRowMutationVariables = Exact<{
   refName: Scalars['String']['input'];
   schemaName?: InputMaybe<Scalars['String']['input']>;
   tableName: Scalars['String']['input'];
-  where: Array<WhereClause> | WhereClause;
+  where: Array<ColumnValueInput> | ColumnValueInput;
 }>;
 
 
@@ -2319,7 +2313,7 @@ export const BranchForCommitGraphFragmentDoc = gql`
 }
     `;
 export const DeleteRowDocument = gql`
-    mutation DeleteRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $where: [WhereClause!]!) {
+    mutation DeleteRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $where: [ColumnValueInput!]!) {
   deleteRow(
     databaseName: $databaseName
     refName: $refName
