@@ -530,6 +530,7 @@ export type Query = {
   doltProcedures: Array<SchemaItem>;
   doltSchemas: Array<SchemaItem>;
   doltServerStatus: DoltServerStatus;
+  previewInsertRow: Scalars['String']['output'];
   pullConflictsSummary?: Maybe<Array<PullConflictSummary>>;
   pullRowConflicts: RowConflictList;
   pullWithDetails: PullWithDetails;
@@ -662,6 +663,15 @@ export type QueryDoltServerStatusArgs = {
   port?: InputMaybe<Scalars['String']['input']>;
   type?: InputMaybe<DatabaseType>;
   useSSL?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryPreviewInsertRowArgs = {
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  values: Array<ColumnValueInput>;
 };
 
 
@@ -1677,6 +1687,17 @@ export type PushToRemoteMutationVariables = Exact<{
 
 
 export type PushToRemoteMutation = { __typename?: 'Mutation', pushToRemote: { __typename?: 'PushRes', success: boolean, message: string } };
+
+export type PreviewInsertRowQueryVariables = Exact<{
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  values: Array<ColumnValueInput> | ColumnValueInput;
+}>;
+
+
+export type PreviewInsertRowQuery = { __typename?: 'Query', previewInsertRow: string };
 
 export type TestListQueryVariables = Exact<{
   databaseName: Scalars['String']['input'];
@@ -4794,6 +4815,54 @@ export function usePushToRemoteMutation(baseOptions?: Apollo.MutationHookOptions
 export type PushToRemoteMutationHookResult = ReturnType<typeof usePushToRemoteMutation>;
 export type PushToRemoteMutationResult = Apollo.MutationResult<PushToRemoteMutation>;
 export type PushToRemoteMutationOptions = Apollo.BaseMutationOptions<PushToRemoteMutation, PushToRemoteMutationVariables>;
+export const PreviewInsertRowDocument = gql`
+    query PreviewInsertRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $values: [ColumnValueInput!]!) {
+  previewInsertRow(
+    databaseName: $databaseName
+    refName: $refName
+    schemaName: $schemaName
+    tableName: $tableName
+    values: $values
+  )
+}
+    `;
+
+/**
+ * __usePreviewInsertRowQuery__
+ *
+ * To run a query within a React component, call `usePreviewInsertRowQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePreviewInsertRowQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePreviewInsertRowQuery({
+ *   variables: {
+ *      databaseName: // value for 'databaseName'
+ *      refName: // value for 'refName'
+ *      schemaName: // value for 'schemaName'
+ *      tableName: // value for 'tableName'
+ *      values: // value for 'values'
+ *   },
+ * });
+ */
+export function usePreviewInsertRowQuery(baseOptions: Apollo.QueryHookOptions<PreviewInsertRowQuery, PreviewInsertRowQueryVariables> & ({ variables: PreviewInsertRowQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>(PreviewInsertRowDocument, options);
+      }
+export function usePreviewInsertRowLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>(PreviewInsertRowDocument, options);
+        }
+export function usePreviewInsertRowSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>(PreviewInsertRowDocument, options);
+        }
+export type PreviewInsertRowQueryHookResult = ReturnType<typeof usePreviewInsertRowQuery>;
+export type PreviewInsertRowLazyQueryHookResult = ReturnType<typeof usePreviewInsertRowLazyQuery>;
+export type PreviewInsertRowSuspenseQueryHookResult = ReturnType<typeof usePreviewInsertRowSuspenseQuery>;
+export type PreviewInsertRowQueryResult = Apollo.QueryResult<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>;
 export const TestListDocument = gql`
     query TestList($databaseName: String!, $refName: String!) {
   tests(databaseName: $databaseName, refName: $refName) {

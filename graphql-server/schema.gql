@@ -414,6 +414,7 @@ type Query {
   rowDiffs(offset: Int, databaseName: String!, fromRefName: String!, toRefName: String!, refName: String, tableName: String!, filterByRowType: DiffRowType, type: CommitDiffType): RowDiffList!
   rows(schemaName: String, refName: String!, databaseName: String!, tableName: String!, offset: Int, withDiff: Boolean): RowList!
   workingDiffRows(schemaName: String, refName: String!, databaseName: String!, tableName: String!, offset: Int, withDiff: Boolean): RowList!
+  previewInsertRow(schemaName: String, tableName: String!, refName: String!, databaseName: String!, values: [ColumnValueInput!]!): String!
   schemaDiff(databaseName: String!, fromRefName: String!, toRefName: String!, refName: String, tableName: String!, type: CommitDiffType): SchemaDiff
   doltSchemas(refName: String!, databaseName: String!, schemaName: String): [SchemaItem!]!
   views(refName: String!, databaseName: String!, schemaName: String): [SchemaItem!]!
@@ -453,6 +454,12 @@ enum DiffRowType {
   Removed
   Modified
   All
+}
+
+input ColumnValueInput {
+  column: String!
+  value: String
+  type: String
 }
 
 input TestIdentifierArgs {
@@ -510,12 +517,6 @@ input AuthorInfo {
 }
 
 input WhereClause {
-  column: String!
-  value: String
-  type: String
-}
-
-input ColumnValueInput {
   column: String!
   value: String
   type: String

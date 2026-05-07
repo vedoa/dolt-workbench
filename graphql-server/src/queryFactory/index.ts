@@ -79,6 +79,8 @@ export declare class QueryFactory {
 
   insertRow(args: t.InsertRowArgs): Promise<t.MutationResult>;
 
+  previewInsertRow(args: t.InsertRowArgs): Promise<string>;
+
   getSchemas(
     args: t.RefMaybeSchemaArgs,
     type?: SchemaType,

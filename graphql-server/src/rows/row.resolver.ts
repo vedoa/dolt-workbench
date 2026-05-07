@@ -8,6 +8,7 @@ import {
   fromDoltListRowWithDiffRes,
   fromDoltListWorkingDiffRowRes,
 } from "./row.model";
+import { InsertRowArgs } from "./rowMutation.resolver";
 import { mergeRowsAndDiffs } from "../queryFactory/dolt/utils";
 
 @ArgsType()
@@ -53,5 +54,11 @@ export class RowResolver {
       offset,
     });
     return fromDoltListWorkingDiffRowRes(workingDiffRows, offset);
+  }
+
+  @Query(_returns => String)
+  async previewInsertRow(@Args() args: InsertRowArgs): Promise<string> {
+    const conn = this.conn.connection();
+    return conn.previewInsertRow(args);
   }
 }

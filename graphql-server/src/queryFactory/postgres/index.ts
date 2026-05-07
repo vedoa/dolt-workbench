@@ -181,6 +181,21 @@ export class PostgresQueryFactory
     );
   }
 
+  async previewInsertRow(args: t.InsertRowArgs): Promise<string> {
+    return this.queryQR(
+      async qr => {
+        const schemaName = await getSchema(qr, args);
+        const target = tableWithSchema({
+          tableName: args.tableName,
+          schemaName,
+        });
+        return buildInsertRow(qr.manager, target, args.values).displaySql;
+      },
+      args.databaseName,
+      args.refName,
+    );
+  }
+
   // TODO: get warnings for postgres
   async getSqlSelect(
     args: t.RefMaybeSchemaArgs & { queryString: string },
