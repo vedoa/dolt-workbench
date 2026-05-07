@@ -180,7 +180,8 @@ export class MySQLQueryFactory
 
   async previewInsertRow(args: t.InsertRowArgs): Promise<string> {
     return this.queryQR(
-      async qr => buildInsertRow(qr.manager, args.tableName, args.values).displaySql,
+      async qr =>
+        buildInsertRow(qr.manager, args.tableName, args.values).displaySql,
       args.databaseName,
       args.refName,
     );
