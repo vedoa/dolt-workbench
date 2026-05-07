@@ -6,7 +6,7 @@ export const DELETE_ROW = gql`
     $refName: String!
     $schemaName: String
     $tableName: String!
-    $where: [WhereClause!]!
+    $where: [ColumnValueInput!]!
   ) {
     deleteRow(
       databaseName: $databaseName
@@ -14,6 +14,28 @@ export const DELETE_ROW = gql`
       schemaName: $schemaName
       tableName: $tableName
       where: $where
+    ) {
+      rowsAffected
+      queryString
+      executionMessage
+    }
+  }
+`;
+
+export const INSERT_ROW = gql`
+  mutation InsertRow(
+    $databaseName: String!
+    $refName: String!
+    $schemaName: String
+    $tableName: String!
+    $values: [ColumnValueInput!]!
+  ) {
+    insertRow(
+      databaseName: $databaseName
+      refName: $refName
+      schemaName: $schemaName
+      tableName: $tableName
+      values: $values
     ) {
       rowsAffected
       queryString

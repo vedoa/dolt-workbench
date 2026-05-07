@@ -1,11 +1,15 @@
+import { useApolloClient } from "@apollo/client";
+import { useDataTableContext } from "@contexts/dataTable";
+import { useSqlEditorContext } from "@contexts/sqleditor";
+import { Button } from "@dolthub/react-components";
 import {
   ColumnForDataTableFragment,
+  ColumnValueInput,
   RowForDataTableFragment,
+  useInsertRowMutation,
 } from "@gen/graphql-types";
-import { useDataTableContext } from "@contexts/dataTable";
-import useSqlBuilder from "@hooks/useSqlBuilder";
-import { Button } from "@dolthub/react-components";
-import { useSqlEditorContext } from "@contexts/sqleditor";
+import useMutation from "@hooks/useMutation";
+import { refetchUpdateDatabaseQueriesCacheEvict } from "@lib/refetchQueries";
 import cx from "classnames";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import PendingCell from "./PendingCell";
@@ -18,11 +22,13 @@ type Props = {
 };
 
 export default function PendingRow(props: Props) {
-  const { insertIntoTable } = useSqlBuilder();
   const { setPendingRow, params, columns } = useDataTableContext();
-  const { executeQuery } = useSqlEditorContext();
+  const { setEditorString, setError, setExecutionMessage } =
+    useSqlEditorContext();
+  const client = useApolloClient();
+  const { mutateFn: insertRow } = useMutation({ hook: useInsertRowMutation });
 
-  const { tableName } = params;
+  const { tableName, schemaName, databaseName, refName } = params;
   if (!tableName) return null;
 
   const onDelete = () => {
@@ -30,18 +36,28 @@ export default function PendingRow(props: Props) {
   };
 
   const onSave = async () => {
-    const query = insertIntoTable(
-      tableName,
-      columns?.map(c => c.name) || [],
+    const values: ColumnValueInput[] =
       columns?.map((c, idx) => {
         return {
+          column: c.name,
+          value: props.row.columnValues[idx]?.displayValue ?? null,
           type: c.type,
-          value: `"${props.row.columnValues[idx]?.displayValue}"`,
         };
-      }) || [],
-    );
-    await executeQuery({ ...params, query });
-    setPendingRow(undefined);
+      }) ?? [];
+
+    const res = await insertRow({
+      variables: { databaseName, refName, schemaName, tableName, values },
+    });
+    if (res.success && res.data?.insertRow) {
+      setEditorString(res.data.insertRow.queryString);
+      setExecutionMessage(res.data.insertRow.executionMessage);
+      client
+        .refetchQueries(refetchUpdateDatabaseQueriesCacheEvict)
+        .catch(console.error);
+      setPendingRow(undefined);
+    } else if (res.error) {
+      setError(res.error);
+    }
   };
 
   return (

@@ -12,7 +12,7 @@ import { ConnectionProvider } from "../connections/connection.provider";
 import { TableMaybeSchemaArgs } from "../utils/commonTypes";
 
 @InputType()
-export class WhereClause {
+export class ColumnValueInput {
   @Field()
   column: string;
 
@@ -37,8 +37,14 @@ export class MutationResult {
 
 @ArgsType()
 export class DeleteRowArgs extends TableMaybeSchemaArgs {
-  @Field(_type => [WhereClause])
-  where: WhereClause[];
+  @Field(_type => [ColumnValueInput])
+  where: ColumnValueInput[];
+}
+
+@ArgsType()
+export class InsertRowArgs extends TableMaybeSchemaArgs {
+  @Field(_type => [ColumnValueInput])
+  values: ColumnValueInput[];
 }
 
 @Resolver()
@@ -49,5 +55,11 @@ export class RowMutationResolver {
   async deleteRow(@Args() args: DeleteRowArgs): Promise<MutationResult> {
     const conn = this.conn.connection();
     return conn.deleteRow(args);
+  }
+
+  @Mutation(_returns => MutationResult)
+  async insertRow(@Args() args: InsertRowArgs): Promise<MutationResult> {
+    const conn = this.conn.connection();
+    return conn.insertRow(args);
   }
 }

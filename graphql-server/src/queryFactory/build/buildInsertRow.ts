@@ -1,36 +1,36 @@
-import { DeleteResult, EntityManager } from "typeorm";
+import { EntityManager, InsertResult } from "typeorm";
 import { ColumnValue } from "../types";
 import {
-  buildWhereConditions,
+  buildColumnValueMap,
   interpolateForDisplay,
   newParamAccumulator,
 } from "./buildUtils";
 
-export type BuiltDelete = {
+export type BuiltInsert = {
   sql: string;
   params: string[];
   displaySql: string;
-  execute: () => Promise<DeleteResult>;
+  execute: () => Promise<InsertResult>;
 };
 
-export function buildDeleteRow(
+export function buildInsertRow(
   em: EntityManager,
   target: string,
-  where: ColumnValue[],
-): BuiltDelete {
-  if (where.length === 0) {
-    throw new Error("deleteRow requires at least one where clause");
+  values: ColumnValue[],
+): BuiltInsert {
+  if (values.length === 0) {
+    throw new Error("insertRow requires at least one column value");
   }
 
-  const escape = em.connection.driver.escape.bind(em.connection.driver);
   const acc = newParamAccumulator();
-  const conditions = buildWhereConditions(where, escape, acc);
+  const colValues = buildColumnValueMap(values, acc);
 
   const qb = em
     .createQueryBuilder()
-    .delete()
-    .from(target)
-    .where(conditions, acc.namedParams);
+    .insert()
+    .into(target)
+    .values(colValues)
+    .setParameters(acc.namedParams);
 
   const [sql, params] = qb.getQueryAndParameters() as [string, string[]];
   const displaySql = interpolateForDisplay(sql, params, acc.paramTypes);

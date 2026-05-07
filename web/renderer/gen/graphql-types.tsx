@@ -74,6 +74,12 @@ export type ColumnValue = {
   displayValue: Scalars['String']['output'];
 };
 
+export type ColumnValueInput = {
+  column: Scalars['String']['input'];
+  type?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type Commit = {
   __typename?: 'Commit';
   _id: Scalars['ID']['output'];
@@ -253,6 +259,7 @@ export type Mutation = {
   deleteTag: Scalars['Boolean']['output'];
   doltClone: Scalars['Boolean']['output'];
   fetchRemote: FetchRes;
+  insertRow: MutationResult;
   loadDataFile: Scalars['Boolean']['output'];
   mergeAndResolveConflicts: Scalars['Boolean']['output'];
   mergePull: Scalars['Boolean']['output'];
@@ -335,7 +342,7 @@ export type MutationDeleteRowArgs = {
   refName: Scalars['String']['input'];
   schemaName?: InputMaybe<Scalars['String']['input']>;
   tableName: Scalars['String']['input'];
-  where: Array<WhereClause>;
+  where: Array<ColumnValueInput>;
 };
 
 
@@ -355,6 +362,15 @@ export type MutationDoltCloneArgs = {
 export type MutationFetchRemoteArgs = {
   databaseName: Scalars['String']['input'];
   remoteName: Scalars['String']['input'];
+};
+
+
+export type MutationInsertRowArgs = {
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  values: Array<ColumnValueInput>;
 };
 
 
@@ -514,6 +530,7 @@ export type Query = {
   doltProcedures: Array<SchemaItem>;
   doltSchemas: Array<SchemaItem>;
   doltServerStatus: DoltServerStatus;
+  previewInsertRow: Scalars['String']['output'];
   pullConflictsSummary?: Maybe<Array<PullConflictSummary>>;
   pullRowConflicts: RowConflictList;
   pullWithDetails: PullWithDetails;
@@ -646,6 +663,15 @@ export type QueryDoltServerStatusArgs = {
   port?: InputMaybe<Scalars['String']['input']>;
   type?: InputMaybe<DatabaseType>;
   useSSL?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryPreviewInsertRowArgs = {
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  values: Array<ColumnValueInput>;
 };
 
 
@@ -1030,12 +1056,6 @@ export type TextDiff = {
   rightLines: Scalars['String']['output'];
 };
 
-export type WhereClause = {
-  column: Scalars['String']['input'];
-  type?: InputMaybe<Scalars['String']['input']>;
-  value?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type WorkingDiff = {
   __typename?: 'WorkingDiff';
   diffColumnNames: Array<Scalars['String']['output']>;
@@ -1047,11 +1067,22 @@ export type DeleteRowMutationVariables = Exact<{
   refName: Scalars['String']['input'];
   schemaName?: InputMaybe<Scalars['String']['input']>;
   tableName: Scalars['String']['input'];
-  where: Array<WhereClause> | WhereClause;
+  where: Array<ColumnValueInput> | ColumnValueInput;
 }>;
 
 
 export type DeleteRowMutation = { __typename?: 'Mutation', deleteRow: { __typename?: 'MutationResult', rowsAffected: number, queryString: string, executionMessage: string } };
+
+export type InsertRowMutationVariables = Exact<{
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  values: Array<ColumnValueInput> | ColumnValueInput;
+}>;
+
+
+export type InsertRowMutation = { __typename?: 'Mutation', insertRow: { __typename?: 'MutationResult', rowsAffected: number, queryString: string, executionMessage: string } };
 
 export type CreateDatabaseMutationVariables = Exact<{
   databaseName: Scalars['String']['input'];
@@ -1650,6 +1681,17 @@ export type PushToRemoteMutationVariables = Exact<{
 
 
 export type PushToRemoteMutation = { __typename?: 'Mutation', pushToRemote: { __typename?: 'PushRes', success: boolean, message: string } };
+
+export type PreviewInsertRowQueryVariables = Exact<{
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  values: Array<ColumnValueInput> | ColumnValueInput;
+}>;
+
+
+export type PreviewInsertRowQuery = { __typename?: 'Query', previewInsertRow: string };
 
 export type TestListQueryVariables = Exact<{
   databaseName: Scalars['String']['input'];
@@ -2271,7 +2313,7 @@ export const BranchForCommitGraphFragmentDoc = gql`
 }
     `;
 export const DeleteRowDocument = gql`
-    mutation DeleteRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $where: [WhereClause!]!) {
+    mutation DeleteRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $where: [ColumnValueInput!]!) {
   deleteRow(
     databaseName: $databaseName
     refName: $refName
@@ -2315,6 +2357,51 @@ export function useDeleteRowMutation(baseOptions?: Apollo.MutationHookOptions<De
 export type DeleteRowMutationHookResult = ReturnType<typeof useDeleteRowMutation>;
 export type DeleteRowMutationResult = Apollo.MutationResult<DeleteRowMutation>;
 export type DeleteRowMutationOptions = Apollo.BaseMutationOptions<DeleteRowMutation, DeleteRowMutationVariables>;
+export const InsertRowDocument = gql`
+    mutation InsertRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $values: [ColumnValueInput!]!) {
+  insertRow(
+    databaseName: $databaseName
+    refName: $refName
+    schemaName: $schemaName
+    tableName: $tableName
+    values: $values
+  ) {
+    rowsAffected
+    queryString
+    executionMessage
+  }
+}
+    `;
+export type InsertRowMutationFn = Apollo.MutationFunction<InsertRowMutation, InsertRowMutationVariables>;
+
+/**
+ * __useInsertRowMutation__
+ *
+ * To run a mutation, you first call `useInsertRowMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useInsertRowMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [insertRowMutation, { data, loading, error }] = useInsertRowMutation({
+ *   variables: {
+ *      databaseName: // value for 'databaseName'
+ *      refName: // value for 'refName'
+ *      schemaName: // value for 'schemaName'
+ *      tableName: // value for 'tableName'
+ *      values: // value for 'values'
+ *   },
+ * });
+ */
+export function useInsertRowMutation(baseOptions?: Apollo.MutationHookOptions<InsertRowMutation, InsertRowMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<InsertRowMutation, InsertRowMutationVariables>(InsertRowDocument, options);
+      }
+export type InsertRowMutationHookResult = ReturnType<typeof useInsertRowMutation>;
+export type InsertRowMutationResult = Apollo.MutationResult<InsertRowMutation>;
+export type InsertRowMutationOptions = Apollo.BaseMutationOptions<InsertRowMutation, InsertRowMutationVariables>;
 export const CreateDatabaseDocument = gql`
     mutation CreateDatabase($databaseName: String!) {
   createDatabase(databaseName: $databaseName)
@@ -4722,6 +4809,54 @@ export function usePushToRemoteMutation(baseOptions?: Apollo.MutationHookOptions
 export type PushToRemoteMutationHookResult = ReturnType<typeof usePushToRemoteMutation>;
 export type PushToRemoteMutationResult = Apollo.MutationResult<PushToRemoteMutation>;
 export type PushToRemoteMutationOptions = Apollo.BaseMutationOptions<PushToRemoteMutation, PushToRemoteMutationVariables>;
+export const PreviewInsertRowDocument = gql`
+    query PreviewInsertRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $values: [ColumnValueInput!]!) {
+  previewInsertRow(
+    databaseName: $databaseName
+    refName: $refName
+    schemaName: $schemaName
+    tableName: $tableName
+    values: $values
+  )
+}
+    `;
+
+/**
+ * __usePreviewInsertRowQuery__
+ *
+ * To run a query within a React component, call `usePreviewInsertRowQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePreviewInsertRowQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePreviewInsertRowQuery({
+ *   variables: {
+ *      databaseName: // value for 'databaseName'
+ *      refName: // value for 'refName'
+ *      schemaName: // value for 'schemaName'
+ *      tableName: // value for 'tableName'
+ *      values: // value for 'values'
+ *   },
+ * });
+ */
+export function usePreviewInsertRowQuery(baseOptions: Apollo.QueryHookOptions<PreviewInsertRowQuery, PreviewInsertRowQueryVariables> & ({ variables: PreviewInsertRowQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>(PreviewInsertRowDocument, options);
+      }
+export function usePreviewInsertRowLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>(PreviewInsertRowDocument, options);
+        }
+export function usePreviewInsertRowSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>(PreviewInsertRowDocument, options);
+        }
+export type PreviewInsertRowQueryHookResult = ReturnType<typeof usePreviewInsertRowQuery>;
+export type PreviewInsertRowLazyQueryHookResult = ReturnType<typeof usePreviewInsertRowLazyQuery>;
+export type PreviewInsertRowSuspenseQueryHookResult = ReturnType<typeof usePreviewInsertRowSuspenseQuery>;
+export type PreviewInsertRowQueryResult = Apollo.QueryResult<PreviewInsertRowQuery, PreviewInsertRowQueryVariables>;
 export const TestListDocument = gql`
     query TestList($databaseName: String!, $refName: String!) {
   tests(databaseName: $databaseName, refName: $refName) {

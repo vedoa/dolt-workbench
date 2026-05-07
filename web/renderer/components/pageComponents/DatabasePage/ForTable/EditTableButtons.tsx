@@ -3,7 +3,11 @@ import Link from "@components/links/Link";
 import { useDataTableContext } from "@contexts/dataTable";
 import { useSqlEditorContext } from "@contexts/sqleditor";
 import { Button, ErrorMsg } from "@dolthub/react-components";
-import { useTagListQuery } from "@gen/graphql-types";
+import {
+  ColumnValueInput,
+  usePreviewInsertRowLazyQuery,
+  useTagListQuery,
+} from "@gen/graphql-types";
 import useDatabaseDetails from "@hooks/useDatabaseDetails";
 import useSqlBuilder from "@hooks/useSqlBuilder";
 import {
@@ -28,10 +32,11 @@ type InnerProps = Props & {
 };
 
 function Inner(props: InnerProps) {
-  const { executeQuery, setEditorString, toggleSqlEditor } =
+  const { executeQuery, setEditorString, setError, toggleSqlEditor } =
     useSqlEditorContext();
-  const { dropTable, insertIntoTable } = useSqlBuilder();
+  const { dropTable } = useSqlBuilder();
   const { columns } = useDataTableContext();
+  const [previewInsertRow] = usePreviewInsertRowLazyQuery();
 
   const uploadParams: UploadParamsWithOptions = {
     ...props.params,
@@ -39,11 +44,24 @@ function Inner(props: InnerProps) {
     uploadId: String(Date.now()),
   };
 
-  const onWriteQuery = () => {
-    const values = columns?.map(mapColTypeToFakeValue) ?? [];
-    const colNames = columns?.map(c => c.name) ?? [];
-    setEditorString(insertIntoTable(props.params.tableName, colNames, values));
-    toggleSqlEditor(true);
+  const onWriteQuery = async () => {
+    const values: ColumnValueInput[] =
+      columns?.map(c => {
+        return {
+          column: c.name,
+          value: String(mapColTypeToFakeValue(c).value),
+          type: c.type,
+        };
+      }) ?? [];
+    const res = await previewInsertRow({
+      variables: { ...props.params, values },
+    });
+    if (res.data?.previewInsertRow) {
+      setEditorString(res.data.previewInsertRow);
+      toggleSqlEditor(true);
+    } else if (res.error) {
+      setError(res.error);
+    }
   };
 
   const onDrop = async () => {

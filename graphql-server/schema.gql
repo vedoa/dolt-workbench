@@ -414,6 +414,7 @@ type Query {
   rowDiffs(offset: Int, databaseName: String!, fromRefName: String!, toRefName: String!, refName: String, tableName: String!, filterByRowType: DiffRowType, type: CommitDiffType): RowDiffList!
   rows(schemaName: String, refName: String!, databaseName: String!, tableName: String!, offset: Int, withDiff: Boolean): RowList!
   workingDiffRows(schemaName: String, refName: String!, databaseName: String!, tableName: String!, offset: Int, withDiff: Boolean): RowList!
+  previewInsertRow(schemaName: String, tableName: String!, refName: String!, databaseName: String!, values: [ColumnValueInput!]!): String!
   schemaDiff(databaseName: String!, fromRefName: String!, toRefName: String!, refName: String, tableName: String!, type: CommitDiffType): SchemaDiff
   doltSchemas(refName: String!, databaseName: String!, schemaName: String): [SchemaItem!]!
   views(refName: String!, databaseName: String!, schemaName: String): [SchemaItem!]!
@@ -455,6 +456,12 @@ enum DiffRowType {
   All
 }
 
+input ColumnValueInput {
+  column: String!
+  value: String
+  type: String
+}
+
 input TestIdentifierArgs {
   testName: String
   groupName: String
@@ -478,7 +485,8 @@ type Mutation {
   pushToRemote(remoteName: String!, databaseName: String!, refName: String!, branchName: String!): PushRes!
   fetchRemote(databaseName: String!, remoteName: String!): FetchRes!
   createBranchFromRemote(remoteName: String!, databaseName: String!, branchName: String!): FetchRes!
-  deleteRow(schemaName: String, tableName: String!, refName: String!, databaseName: String!, where: [WhereClause!]!): MutationResult!
+  deleteRow(schemaName: String, tableName: String!, refName: String!, databaseName: String!, where: [ColumnValueInput!]!): MutationResult!
+  insertRow(schemaName: String, tableName: String!, refName: String!, databaseName: String!, values: [ColumnValueInput!]!): MutationResult!
   restoreAllTables(databaseName: String!, refName: String!): Boolean!
   createTag(tagName: String!, databaseName: String!, message: String, fromRefName: String!, author: AuthorInfo): String!
   deleteTag(databaseName: String!, tagName: String!): Boolean!
@@ -506,12 +514,6 @@ enum LoadDataModifier {
 input AuthorInfo {
   name: String!
   email: String!
-}
-
-input WhereClause {
-  column: String!
-  value: String
-  type: String
 }
 
 input TestListArgs {
