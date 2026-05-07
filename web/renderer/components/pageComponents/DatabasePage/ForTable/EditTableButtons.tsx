@@ -46,11 +46,13 @@ function Inner(props: InnerProps) {
 
   const onWriteQuery = async () => {
     const values: ColumnValueInput[] =
-      columns?.map(c => ({
-        column: c.name,
-        value: String(mapColTypeToFakeValue(c).value),
-        type: c.type,
-      })) ?? [];
+      columns?.map(c => {
+        return {
+          column: c.name,
+          value: String(mapColTypeToFakeValue(c).value),
+          type: c.type,
+        };
+      }) ?? [];
     const res = await previewInsertRow({
       variables: { ...props.params, values },
     });
