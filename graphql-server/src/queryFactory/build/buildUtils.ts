@@ -1,4 +1,5 @@
 import { pluralize } from "@dolthub/web-utils";
+import { EntityManager } from "typeorm";
 import { ColumnValue } from "../types";
 
 export type Built<TResult> = {
@@ -19,6 +20,15 @@ export function escapeQualifiedIdentifier(
   qualified: string,
 ): string {
   return qualified.split(".").map(escape).join(".");
+}
+
+export function ddlBuilt(em: EntityManager, sql: string): Built<unknown> {
+  return {
+    sql,
+    params: [],
+    displaySql: sql,
+    execute: async () => em.query(sql),
+  };
 }
 
 export function escapeStringLiteral(s: string): string {

@@ -1,14 +1,19 @@
-export const addItem = jest.fn();
+import { MockedResponse } from "@apollo/client/testing";
+import { CreateViewDocument } from "@gen/graphql-types";
+
+export const setEditorString = jest.fn();
+export const setExecutionMessage = jest.fn();
+export const setError = jest.fn();
 
 export const SqlEditorContextProviderValueMock = {
-  setEditorString: jest.fn(),
+  setEditorString,
   editorString: "",
   toggleSqlEditor: jest.fn(),
   showSqlEditor: false,
-  executeQuery: addItem,
+  executeQuery: jest.fn(),
   queryClickHandler: jest.fn(),
-  setError: jest.fn(),
-  setExecutionMessage: jest.fn(),
+  setError,
+  setExecutionMessage,
   loading: false,
   modalState: {
     forkIsOpen: false,
@@ -16,4 +21,28 @@ export const SqlEditorContextProviderValueMock = {
   },
   setModalState: jest.fn(),
   executeSaveQuery: jest.fn(),
+};
+
+export const createViewMock = (
+  databaseName: string,
+  refName: string,
+  name: string,
+  queryString: string,
+): MockedResponse => {
+  return {
+    request: {
+      query: CreateViewDocument,
+      variables: { databaseName, refName, name, queryString },
+    },
+    result: {
+      data: {
+        createView: {
+          __typename: "MutationResult",
+          rowsAffected: 0,
+          queryString: `CREATE VIEW \`${name}\` AS ${queryString}`,
+          executionMessage: "Query OK.",
+        },
+      },
+    },
+  };
 };

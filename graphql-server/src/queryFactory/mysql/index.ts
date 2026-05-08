@@ -5,6 +5,7 @@ import { SchemaItem } from "../../schemas/schema.model";
 import { TableDetails } from "../../tables/table.model";
 import { BaseQueryFactory } from "../base";
 import * as t from "../types";
+import { buildCreateView } from "../build/buildCreateView";
 import { buildDeleteRow } from "../build/buildDeleteRow";
 import { buildDropColumn } from "../build/buildDropColumn";
 import { buildDropTable } from "../build/buildDropTable";
@@ -239,6 +240,22 @@ export class MySQLQueryFactory
     return this.queryQR(
       async qr => {
         const built = buildDropTable(qr.manager, args.tableName);
+        await built.execute();
+        return {
+          rowsAffected: 0,
+          queryString: built.displaySql,
+          executionMessage: DDL_EXECUTION_MESSAGE,
+        };
+      },
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async createView(args: t.CreateViewArgs): Promise<t.MutationResult> {
+    return this.queryQR(
+      async qr => {
+        const built = buildCreateView(qr.manager, args.name, args.queryString);
         await built.execute();
         return {
           rowsAffected: 0,

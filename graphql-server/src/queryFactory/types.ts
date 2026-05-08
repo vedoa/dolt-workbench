@@ -99,6 +99,11 @@ export type DropColumnArgs = TableMaybeSchemaArgs & {
   columnName: string;
 };
 
+export type CreateViewArgs = RefMaybeSchemaArgs & {
+  name: string;
+  queryString: string;
+};
+
 export type MutationResult = {
   rowsAffected: number;
   queryString: string;
