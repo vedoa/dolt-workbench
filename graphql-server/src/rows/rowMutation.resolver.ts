@@ -62,9 +62,6 @@ export class DropColumnArgs extends TableMaybeSchemaArgs {
   columnName: string;
 }
 
-@ArgsType()
-export class DropTableArgs extends TableMaybeSchemaArgs {}
-
 @Resolver()
 export class RowMutationResolver {
   constructor(private readonly conn: ConnectionProvider) {}
@@ -94,7 +91,7 @@ export class RowMutationResolver {
   }
 
   @Mutation(_returns => MutationResult)
-  async dropTable(@Args() args: DropTableArgs): Promise<MutationResult> {
+  async dropTable(@Args() args: TableMaybeSchemaArgs): Promise<MutationResult> {
     const conn = this.conn.connection();
     return conn.dropTable(args);
   }

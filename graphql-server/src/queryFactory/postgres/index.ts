@@ -245,7 +245,7 @@ export class PostgresQueryFactory
     );
   }
 
-  async dropTable(args: t.DropTableArgs): Promise<t.MutationResult> {
+  async dropTable(args: t.TableMaybeSchemaArgs): Promise<t.MutationResult> {
     return this.queryQR(
       async qr => {
         const schemaName = await getSchema(qr, args);
