@@ -3,7 +3,6 @@ import DocsLink from "@components/links/DocsLink";
 import { useSqlEditorContext } from "@contexts/sqleditor";
 import { FormInput, FormModal, Loader } from "@dolthub/react-components";
 import { useCreateViewMutation } from "@gen/graphql-types";
-import useDatabaseDetails from "@hooks/useDatabaseDetails";
 import useMutation from "@hooks/useMutation";
 import { ModalProps } from "@lib/modalProps";
 import { OptionalRefParams } from "@lib/params";
@@ -27,15 +26,11 @@ export default function CreateViewModal({
 }: Props): JSX.Element {
   const { setEditorString, setError, setExecutionMessage, error } =
     useSqlEditorContext("Views");
-  const { isPostgres } = useDatabaseDetails();
   const { mutateFn: createView, loading } = useMutation({
     hook: useCreateViewMutation,
   });
   const client = useApolloClient();
   const [name, setName] = useState("your_name_here");
-
-  const escapedName = isPostgres ? `"${name}"` : `\`${name}\``;
-  const previewSql = `CREATE VIEW ${escapedName} AS ${props.query}`;
 
   const onClose = () => {
     setIsOpen(false);
@@ -85,7 +80,7 @@ export default function CreateViewModal({
       <div className={css.query}>
         <div className={css.label}>Query</div>
         <AceEditor
-          value={previewSql}
+          value={props.query}
           name="AceViewer"
           fontSize={13}
           readOnly
