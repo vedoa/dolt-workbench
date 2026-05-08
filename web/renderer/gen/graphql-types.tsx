@@ -269,6 +269,7 @@ export type Mutation = {
   resetDatabase: Scalars['Boolean']['output'];
   restoreAllTables: Scalars['Boolean']['output'];
   saveTests: TestList;
+  updateRow: MutationResult;
 };
 
 
@@ -440,6 +441,16 @@ export type MutationSaveTestsArgs = {
   databaseName: Scalars['String']['input'];
   refName: Scalars['String']['input'];
   tests: TestListArgs;
+};
+
+
+export type MutationUpdateRowArgs = {
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  set: Array<ColumnValueInput>;
+  tableName: Scalars['String']['input'];
+  where: Array<ColumnValueInput>;
 };
 
 export type MutationResult = {
@@ -1083,6 +1094,18 @@ export type InsertRowMutationVariables = Exact<{
 
 
 export type InsertRowMutation = { __typename?: 'Mutation', insertRow: { __typename?: 'MutationResult', rowsAffected: number, queryString: string, executionMessage: string } };
+
+export type UpdateRowMutationVariables = Exact<{
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  set: Array<ColumnValueInput> | ColumnValueInput;
+  where: Array<ColumnValueInput> | ColumnValueInput;
+}>;
+
+
+export type UpdateRowMutation = { __typename?: 'Mutation', updateRow: { __typename?: 'MutationResult', rowsAffected: number, queryString: string, executionMessage: string } };
 
 export type CreateDatabaseMutationVariables = Exact<{
   databaseName: Scalars['String']['input'];
@@ -2402,6 +2425,53 @@ export function useInsertRowMutation(baseOptions?: Apollo.MutationHookOptions<In
 export type InsertRowMutationHookResult = ReturnType<typeof useInsertRowMutation>;
 export type InsertRowMutationResult = Apollo.MutationResult<InsertRowMutation>;
 export type InsertRowMutationOptions = Apollo.BaseMutationOptions<InsertRowMutation, InsertRowMutationVariables>;
+export const UpdateRowDocument = gql`
+    mutation UpdateRow($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $set: [ColumnValueInput!]!, $where: [ColumnValueInput!]!) {
+  updateRow(
+    databaseName: $databaseName
+    refName: $refName
+    schemaName: $schemaName
+    tableName: $tableName
+    set: $set
+    where: $where
+  ) {
+    rowsAffected
+    queryString
+    executionMessage
+  }
+}
+    `;
+export type UpdateRowMutationFn = Apollo.MutationFunction<UpdateRowMutation, UpdateRowMutationVariables>;
+
+/**
+ * __useUpdateRowMutation__
+ *
+ * To run a mutation, you first call `useUpdateRowMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateRowMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateRowMutation, { data, loading, error }] = useUpdateRowMutation({
+ *   variables: {
+ *      databaseName: // value for 'databaseName'
+ *      refName: // value for 'refName'
+ *      schemaName: // value for 'schemaName'
+ *      tableName: // value for 'tableName'
+ *      set: // value for 'set'
+ *      where: // value for 'where'
+ *   },
+ * });
+ */
+export function useUpdateRowMutation(baseOptions?: Apollo.MutationHookOptions<UpdateRowMutation, UpdateRowMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateRowMutation, UpdateRowMutationVariables>(UpdateRowDocument, options);
+      }
+export type UpdateRowMutationHookResult = ReturnType<typeof useUpdateRowMutation>;
+export type UpdateRowMutationResult = Apollo.MutationResult<UpdateRowMutation>;
+export type UpdateRowMutationOptions = Apollo.BaseMutationOptions<UpdateRowMutation, UpdateRowMutationVariables>;
 export const CreateDatabaseDocument = gql`
     mutation CreateDatabase($databaseName: String!) {
   createDatabase(databaseName: $databaseName)

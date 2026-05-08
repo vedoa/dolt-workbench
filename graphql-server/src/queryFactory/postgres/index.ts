@@ -15,6 +15,7 @@ import * as qh from "./queries";
 import { changeSchema, getSchema, tableWithSchema } from "./utils";
 import { buildDeleteRow } from "../build/buildDeleteRow";
 import { buildInsertRow } from "../build/buildInsertRow";
+import { buildUpdateRow } from "../build/buildUpdateRow";
 import { mutationExecutionMessage } from "../build/buildUtils";
 import { classifyPgResult } from "./classifyResult";
 
@@ -190,6 +191,28 @@ export class PostgresQueryFactory
           schemaName,
         });
         return buildInsertRow(qr.manager, target, args.values).displaySql;
+      },
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async updateRow(args: t.UpdateRowArgs): Promise<t.MutationResult> {
+    return this.queryQR(
+      async qr => {
+        const schemaName = await getSchema(qr, args);
+        const target = tableWithSchema({
+          tableName: args.tableName,
+          schemaName,
+        });
+        const built = buildUpdateRow(qr.manager, target, args.set, args.where);
+        const result = await built.execute();
+        const rowsAffected = result.affected ?? 0;
+        return {
+          rowsAffected,
+          queryString: built.displaySql,
+          executionMessage: mutationExecutionMessage(rowsAffected),
+        };
       },
       args.databaseName,
       args.refName,

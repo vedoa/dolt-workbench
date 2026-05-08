@@ -47,6 +47,15 @@ export class InsertRowArgs extends TableMaybeSchemaArgs {
   values: ColumnValueInput[];
 }
 
+@ArgsType()
+export class UpdateRowArgs extends TableMaybeSchemaArgs {
+  @Field(_type => [ColumnValueInput])
+  set: ColumnValueInput[];
+
+  @Field(_type => [ColumnValueInput])
+  where: ColumnValueInput[];
+}
+
 @Resolver()
 export class RowMutationResolver {
   constructor(private readonly conn: ConnectionProvider) {}
@@ -61,5 +70,11 @@ export class RowMutationResolver {
   async insertRow(@Args() args: InsertRowArgs): Promise<MutationResult> {
     const conn = this.conn.connection();
     return conn.insertRow(args);
+  }
+
+  @Mutation(_returns => MutationResult)
+  async updateRow(@Args() args: UpdateRowArgs): Promise<MutationResult> {
+    const conn = this.conn.connection();
+    return conn.updateRow(args);
   }
 }
