@@ -66,9 +66,6 @@ export class DropColumnArgs extends TableMaybeSchemaArgs {
 }
 
 @ArgsType()
-export class DropTableArgs extends TableMaybeSchemaArgs {}
-
-@ArgsType()
 export class CreateViewArgs extends RefMaybeSchemaArgs {
   @Field()
   name: string;
@@ -106,7 +103,7 @@ export class RowMutationResolver {
   }
 
   @Mutation(_returns => MutationResult)
-  async dropTable(@Args() args: DropTableArgs): Promise<MutationResult> {
+  async dropTable(@Args() args: TableMaybeSchemaArgs): Promise<MutationResult> {
     const conn = this.conn.connection();
     return conn.dropTable(args);
   }

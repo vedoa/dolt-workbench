@@ -24,6 +24,11 @@ type Props = {
 
 export default function Row(props: Props) {
   const [showDropdown, setShowDropdown] = useState(false);
+
+  if (props.row.columnValues.length !== props.columns.length) {
+    return null;
+  }
+
   const diffTypeClassName = getDiffTypeClassNameForRow(
     props.row,
     props.columns,
@@ -48,11 +53,9 @@ export default function Row(props: Props) {
           </CellDropdown>
         )}
       </td>
-      {props.row.columnValues
-        .slice(0, props.columns.length)
-        .map((cell, cidx) => (
-          <Cell key={cidx} {...props} cell={cell} cidx={cidx} />
-        ))}
+      {props.row.columnValues.map((cell, cidx) => (
+        <Cell key={cidx} {...props} cell={cell} cidx={cidx} />
+      ))}
     </tr>
   );
 }

@@ -85,7 +85,7 @@ export declare class QueryFactory {
 
   dropColumn(args: t.DropColumnArgs): Promise<t.MutationResult>;
 
-  dropTable(args: t.DropTableArgs): Promise<t.MutationResult>;
+  dropTable(args: t.TableMaybeSchemaArgs): Promise<t.MutationResult>;
 
   createView(args: t.CreateViewArgs): Promise<t.MutationResult>;
 

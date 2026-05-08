@@ -236,7 +236,7 @@ export class MySQLQueryFactory
     );
   }
 
-  async dropTable(args: t.DropTableArgs): Promise<t.MutationResult> {
+  async dropTable(args: t.TableMaybeSchemaArgs): Promise<t.MutationResult> {
     return this.queryQR(
       async qr => {
         const built = buildDropTable(qr.manager, args.tableName);
