@@ -28,19 +28,21 @@ export const createViewMock = (
   refName: string,
   name: string,
   queryString: string,
-): MockedResponse => ({
-  request: {
-    query: CreateViewDocument,
-    variables: { databaseName, refName, name, queryString },
-  },
-  result: {
-    data: {
-      createView: {
-        __typename: "MutationResult",
-        rowsAffected: 0,
-        queryString: `CREATE VIEW \`${name}\` AS ${queryString}`,
-        executionMessage: "Query OK.",
+): MockedResponse => {
+  return {
+    request: {
+      query: CreateViewDocument,
+      variables: { databaseName, refName, name, queryString },
+    },
+    result: {
+      data: {
+        createView: {
+          __typename: "MutationResult",
+          rowsAffected: 0,
+          queryString: `CREATE VIEW \`${name}\` AS ${queryString}`,
+          executionMessage: "Query OK.",
+        },
       },
     },
-  },
-});
+  };
+};

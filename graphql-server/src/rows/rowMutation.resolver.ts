@@ -9,10 +9,7 @@ import {
   Resolver,
 } from "@nestjs/graphql";
 import { ConnectionProvider } from "../connections/connection.provider";
-import {
-  RefMaybeSchemaArgs,
-  TableMaybeSchemaArgs,
-} from "../utils/commonTypes";
+import { RefMaybeSchemaArgs, TableMaybeSchemaArgs } from "../utils/commonTypes";
 
 @InputType()
 export class ColumnValueInput {

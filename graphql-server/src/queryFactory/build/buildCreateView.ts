@@ -1,5 +1,5 @@
 import { EntityManager } from "typeorm";
-import { Built, escapeQualifiedIdentifier } from "./buildUtils";
+import { Built, ddlBuilt, escapeQualifiedIdentifier } from "./buildUtils";
 
 export function buildCreateView(
   em: EntityManager,
@@ -7,11 +7,8 @@ export function buildCreateView(
   queryString: string,
 ): Built<unknown> {
   const escape = em.connection.driver.escape.bind(em.connection.driver);
-  const sql = `CREATE VIEW ${escapeQualifiedIdentifier(escape, target)} AS ${queryString}`;
-  return {
-    sql,
-    params: [],
-    displaySql: sql,
-    execute: async () => em.query(sql),
-  };
+  return ddlBuilt(
+    em,
+    `CREATE VIEW ${escapeQualifiedIdentifier(escape, target)} AS ${queryString}`,
+  );
 }

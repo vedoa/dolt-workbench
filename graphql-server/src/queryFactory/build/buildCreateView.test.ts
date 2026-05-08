@@ -11,7 +11,11 @@ const pgEm = new EntityManager(
 describe("buildCreateView", () => {
   describe("mysql", () => {
     it("emits CREATE VIEW with backtick name and queryString as-is", () => {
-      const out = buildCreateView(mysqlEm, "active_users", "SELECT * FROM users WHERE active = TRUE");
+      const out = buildCreateView(
+        mysqlEm,
+        "active_users",
+        "SELECT * FROM users WHERE active = TRUE",
+      );
       expect(out.sql).toBe(
         "CREATE VIEW `active_users` AS SELECT * FROM users WHERE active = TRUE",
       );
