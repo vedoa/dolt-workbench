@@ -1,9 +1,13 @@
+import { useApolloClient } from "@apollo/client";
 import DocsLink from "@components/links/DocsLink";
 import { useSqlEditorContext } from "@contexts/sqleditor";
 import { FormInput, FormModal, Loader } from "@dolthub/react-components";
-import useSqlBuilder from "@hooks/useSqlBuilder";
+import { useCreateViewMutation } from "@gen/graphql-types";
+import useDatabaseDetails from "@hooks/useDatabaseDetails";
+import useMutation from "@hooks/useMutation";
 import { ModalProps } from "@lib/modalProps";
 import { OptionalRefParams } from "@lib/params";
+import { refetchUpdateDatabaseQueriesCacheEvict } from "@lib/refetchQueries";
 import dynamic from "next/dynamic";
 import { SyntheticEvent, useState } from "react";
 import css from "./index.module.css";
@@ -21,11 +25,17 @@ export default function CreateViewModal({
   setIsOpen,
   ...props
 }: Props): JSX.Element {
-  const { executeQuery, error } = useSqlEditorContext("Views");
-  const { createView } = useSqlBuilder();
+  const { setEditorString, setError, setExecutionMessage, error } =
+    useSqlEditorContext("Views");
+  const { isPostgres } = useDatabaseDetails();
+  const { mutateFn: createView, loading } = useMutation({
+    hook: useCreateViewMutation,
+  });
+  const client = useApolloClient();
   const [name, setName] = useState("your_name_here");
-  const [loading, setLoading] = useState(false);
-  const query = createView(name, props.query);
+
+  const escapedName = isPostgres ? `"${name}"` : `\`${name}\``;
+  const previewSql = `CREATE VIEW ${escapedName} AS ${props.query}`;
 
   const onClose = () => {
     setIsOpen(false);
@@ -33,12 +43,28 @@ export default function CreateViewModal({
 
   const onSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    setLoading(true);
-    await executeQuery({
-      ...props.params,
-      query,
+    if (!props.params.refName) {
+      setError(new Error("Cannot create view without ref"));
+      return;
+    }
+    const res = await createView({
+      variables: {
+        databaseName: props.params.databaseName,
+        refName: props.params.refName,
+        name,
+        queryString: props.query,
+      },
     });
-    setLoading(false);
+    if (res.success && res.data?.createView) {
+      setEditorString(res.data.createView.queryString);
+      setExecutionMessage(res.data.createView.executionMessage);
+      client
+        .refetchQueries(refetchUpdateDatabaseQueriesCacheEvict)
+        .catch(console.error);
+      setIsOpen(false);
+    } else if (res.error) {
+      setError(res.error);
+    }
   };
 
   return (
@@ -59,7 +85,7 @@ export default function CreateViewModal({
       <div className={css.query}>
         <div className={css.label}>Query</div>
         <AceEditor
-          value={query}
+          value={previewSql}
           name="AceViewer"
           fontSize={13}
           readOnly

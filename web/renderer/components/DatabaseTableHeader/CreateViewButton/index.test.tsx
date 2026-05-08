@@ -2,7 +2,7 @@ import { MockedProvider } from "@apollo/client/testing";
 import { SqlEditorContext } from "@contexts/sqleditor";
 import { RefParams } from "@lib/params";
 import { setup } from "@lib/testUtils.test";
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import CreateViewButton from ".";
 import * as mocks from "./mocks";
 
@@ -14,25 +14,15 @@ const sqlString = `SELECT *\nFROM \`hhh\`\nLIMIT 200;\n`;
 const viewName = "fakename";
 
 describe("test for ViewQueryButton", () => {
-  // it("does not render component for reader", () => {
-  //   render(
-  //     <MockedProvider>
-  //       <SqlEditorContext.Provider
-  //         value={mocks.SqlEditorContextProviderValueMock}
-  //       >
-  //         <CreateViewButton params={params} query={sqlString} />
-  //       </SqlEditorContext.Provider>
-  //     </MockedProvider>,
-  //   );
-
-  //   expect(
-  //     screen.queryByRole("button", { name: "Create View" }),
-  //   ).not.toBeInTheDocument();
-  // });
-
   it("renders component for admin", async () => {
+    const mock = mocks.createViewMock(
+      params.databaseName,
+      params.refName,
+      viewName,
+      sqlString,
+    );
     const { user } = setup(
-      <MockedProvider>
+      <MockedProvider mocks={[mock]}>
         <SqlEditorContext.Provider
           value={mocks.SqlEditorContextProviderValueMock}
         >
@@ -58,10 +48,11 @@ describe("test for ViewQueryButton", () => {
     expect(screen.getByRole("button", { name: "Create" })).toBeEnabled();
 
     await user.click(screen.getByRole("button", { name: "Create" }));
-    expect(mocks.addItem).toHaveBeenCalledWith({
-      ...params,
-      expandedSection: "Views",
-      query: `CREATE VIEW \`${viewName}\` AS ${sqlString}`,
+    await waitFor(() => {
+      expect(mocks.setEditorString).toHaveBeenCalledWith(
+        `CREATE VIEW \`${viewName}\` AS ${sqlString}`,
+      );
     });
+    expect(mocks.setExecutionMessage).toHaveBeenCalledWith("Query OK.");
   });
 });

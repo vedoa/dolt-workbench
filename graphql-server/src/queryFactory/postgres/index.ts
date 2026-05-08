@@ -13,6 +13,7 @@ import {
 import * as t from "../types";
 import * as qh from "./queries";
 import { changeSchema, getSchema, tableWithSchema } from "./utils";
+import { buildCreateView } from "../build/buildCreateView";
 import { buildDeleteRow } from "../build/buildDeleteRow";
 import { buildDropColumn } from "../build/buildDropColumn";
 import { buildDropTable } from "../build/buildDropTable";
@@ -254,6 +255,27 @@ export class PostgresQueryFactory
           schemaName,
         });
         const built = buildDropTable(qr.manager, target);
+        await built.execute();
+        return {
+          rowsAffected: 0,
+          queryString: built.displaySql,
+          executionMessage: DDL_EXECUTION_MESSAGE,
+        };
+      },
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async createView(args: t.CreateViewArgs): Promise<t.MutationResult> {
+    return this.queryQR(
+      async qr => {
+        const schemaName = await getSchema(qr, args);
+        const target = tableWithSchema({
+          tableName: args.name,
+          schemaName,
+        });
+        const built = buildCreateView(qr.manager, target, args.queryString);
         await built.execute();
         return {
           rowsAffected: 0,

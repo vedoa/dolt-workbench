@@ -87,6 +87,8 @@ export declare class QueryFactory {
 
   dropTable(args: t.DropTableArgs): Promise<t.MutationResult>;
 
+  createView(args: t.CreateViewArgs): Promise<t.MutationResult>;
+
   getSchemas(
     args: t.RefMaybeSchemaArgs,
     type?: SchemaType,

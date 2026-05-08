@@ -253,6 +253,7 @@ export type Mutation = {
   createDatabase: Scalars['Boolean']['output'];
   createSchema: Scalars['Boolean']['output'];
   createTag: Scalars['String']['output'];
+  createView: MutationResult;
   deleteBranch: Scalars['Boolean']['output'];
   deleteRemote: Scalars['Boolean']['output'];
   deleteRow: MutationResult;
@@ -325,6 +326,15 @@ export type MutationCreateTagArgs = {
   fromRefName: Scalars['String']['input'];
   message?: InputMaybe<Scalars['String']['input']>;
   tagName: Scalars['String']['input'];
+};
+
+
+export type MutationCreateViewArgs = {
+  databaseName: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  queryString: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1216,6 +1226,17 @@ export type SqlSelectForCsvDownloadQueryVariables = Exact<{
 
 
 export type SqlSelectForCsvDownloadQuery = { __typename?: 'Query', sqlSelectForCsvDownload: string };
+
+export type CreateViewMutationVariables = Exact<{
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  queryString: Scalars['String']['input'];
+}>;
+
+
+export type CreateViewMutation = { __typename?: 'Mutation', createView: { __typename?: 'MutationResult', rowsAffected: number, queryString: string, executionMessage: string } };
 
 export type DatabasesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2966,6 +2987,51 @@ export type SqlSelectForCsvDownloadQueryHookResult = ReturnType<typeof useSqlSel
 export type SqlSelectForCsvDownloadLazyQueryHookResult = ReturnType<typeof useSqlSelectForCsvDownloadLazyQuery>;
 export type SqlSelectForCsvDownloadSuspenseQueryHookResult = ReturnType<typeof useSqlSelectForCsvDownloadSuspenseQuery>;
 export type SqlSelectForCsvDownloadQueryResult = Apollo.QueryResult<SqlSelectForCsvDownloadQuery, SqlSelectForCsvDownloadQueryVariables>;
+export const CreateViewDocument = gql`
+    mutation CreateView($databaseName: String!, $refName: String!, $schemaName: String, $name: String!, $queryString: String!) {
+  createView(
+    databaseName: $databaseName
+    refName: $refName
+    schemaName: $schemaName
+    name: $name
+    queryString: $queryString
+  ) {
+    rowsAffected
+    queryString
+    executionMessage
+  }
+}
+    `;
+export type CreateViewMutationFn = Apollo.MutationFunction<CreateViewMutation, CreateViewMutationVariables>;
+
+/**
+ * __useCreateViewMutation__
+ *
+ * To run a mutation, you first call `useCreateViewMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateViewMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createViewMutation, { data, loading, error }] = useCreateViewMutation({
+ *   variables: {
+ *      databaseName: // value for 'databaseName'
+ *      refName: // value for 'refName'
+ *      schemaName: // value for 'schemaName'
+ *      name: // value for 'name'
+ *      queryString: // value for 'queryString'
+ *   },
+ * });
+ */
+export function useCreateViewMutation(baseOptions?: Apollo.MutationHookOptions<CreateViewMutation, CreateViewMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateViewMutation, CreateViewMutationVariables>(CreateViewDocument, options);
+      }
+export type CreateViewMutationHookResult = ReturnType<typeof useCreateViewMutation>;
+export type CreateViewMutationResult = Apollo.MutationResult<CreateViewMutation>;
+export type CreateViewMutationOptions = Apollo.BaseMutationOptions<CreateViewMutation, CreateViewMutationVariables>;
 export const DatabasesDocument = gql`
     query Databases {
   databases

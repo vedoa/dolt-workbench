@@ -107,6 +107,11 @@ export type DropTableArgs = RefMaybeSchemaArgs & {
   tableName: string;
 };
 
+export type CreateViewArgs = RefMaybeSchemaArgs & {
+  name: string;
+  queryString: string;
+};
+
 export type MutationResult = {
   rowsAffected: number;
   queryString: string;
