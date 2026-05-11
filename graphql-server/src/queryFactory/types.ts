@@ -67,6 +67,9 @@ export type SqlSelectResult = {
   isMutation: boolean;
   executionMessage: string;
   warnings?: string[];
+  // Populated only by selectTableRows (where the server constructed the SQL
+  // and echoes it back to the UI). Other paths leave this undefined.
+  queryString?: string;
 };
 export type RawRowsWithDiff = RawRowWithDiff[];
 export type PR = Promise<RawRows>;
@@ -102,6 +105,23 @@ export type DropColumnArgs = TableMaybeSchemaArgs & {
 export type CreateViewArgs = RefMaybeSchemaArgs & {
   name: string;
   queryString: string;
+};
+
+export type OrderByClause = {
+  column: string;
+  direction: "ASC" | "DESC";
+};
+
+export type PkRow = {
+  values: ColumnValue[];
+};
+
+export type SelectTableRowsArgs = TableMaybeSchemaArgs & {
+  orderBy?: OrderByClause[];
+  where?: ColumnValue[];
+  excludePks?: PkRow[];
+  projection?: string[];
+  offset?: number;
 };
 
 export type MutationResult = {

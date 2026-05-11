@@ -1,8 +1,12 @@
 import { useDataTableContext } from "@contexts/dataTable";
-import { useSqlEditorContext } from "@contexts/sqleditor";
 import { Button } from "@dolthub/react-components";
 import { ColumnForDataTableFragment } from "@gen/graphql-types";
-import useSqlBuilder from "@hooks/useSqlBuilder";
+import {
+  parseStackingParams,
+  pushStack,
+  removeFromProjection,
+} from "@lib/dataTableParams";
+import { useRouter } from "next/router";
 import css from "./index.module.css";
 
 type Props = {
@@ -11,14 +15,21 @@ type Props = {
 };
 
 export default function HideColumnButton({ col, columns }: Props) {
-  const { executeQuery } = useSqlEditorContext();
-  const { removeColumnFromQuery, selectFromTable } = useSqlBuilder();
-  const { params } = useDataTableContext();
-  const q = params.q ?? selectFromTable(params.tableName ?? "");
+  const router = useRouter();
+  const { tableShape } = useDataTableContext();
 
-  const onClick = async () => {
-    const query = removeColumnFromQuery(q, col.name, columns);
-    await executeQuery({ ...params, query });
+  if (!tableShape) return null;
+
+  const onClick = () => {
+    const stack = parseStackingParams(router.query);
+    pushStack(router, {
+      ...stack,
+      projection: removeFromProjection(
+        stack.projection,
+        col.name,
+        columns.map(c => c.name),
+      ),
+    });
   };
 
   return (

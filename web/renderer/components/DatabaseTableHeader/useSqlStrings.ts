@@ -1,3 +1,4 @@
+import { useDataTableContext } from "@contexts/dataTable";
 import { useSqlEditorContext } from "@contexts/sqleditor";
 import useSqlBuilder from "@hooks/useSqlBuilder";
 import { isDoltSystemTable } from "@lib/doltSystemTables";
@@ -14,6 +15,7 @@ export function useSqlStrings(
   const { getDefaultQueryString, selectFromTable, isPostgres } =
     useSqlBuilder();
   const { editorString, setEditorString } = useSqlEditorContext();
+  const { executedQueryString } = useDataTableContext();
   const defaultQuery = getDefaultQueryString(params.schemaName);
 
   const flattenNewLines = (query: string) =>
@@ -35,11 +37,12 @@ export function useSqlStrings(
       return sampleCreateQueryForEmpty();
     }
     if (params.q) return params.q;
+    if (executedQueryString) return addEmptyLines([executedQueryString]);
     if (!params.tableName || isDoltSystemTable(params.tableName)) {
       return addEmptyLines([defaultQuery]);
     }
     return addEmptyLines([selectFromTable(params.tableName, DEFAULT_LIMIT)]);
-  }, [params.q, params.tableName, empty, isPostgres]);
+  }, [params.q, params.tableName, empty, isPostgres, executedQueryString]);
 
   useEffect(() => {
     const sqlQuery = getEditorString();

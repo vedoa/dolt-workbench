@@ -39,6 +39,51 @@ export class SqlSelect {
   warnings?: string[];
 }
 
+// `doltRows` is already offset+limit on the SQL side (up to ROW_LIMIT+1 rows
+// starting at `offset`); unlike fromSqlSelectRow this function does not slice
+// by offset.
+export function fromServerPaginatedRows(
+  databaseName: string,
+  refName: string,
+  doltRows: RawRow[],
+  executionMessage: string,
+  queryString: string,
+  offset: number,
+  warnings?: string[],
+): SqlSelect {
+  const base = {
+    // Offset is part of _id so paginated pages don't collide as one Apollo
+    // cache entity (displaySql strips OFFSET, so without this every page
+    // would normalize to the same key and overwrite each other).
+    _id: `/databases/${databaseName}/refs/${refName}/queries/${queryString}/offset/${offset}`,
+    databaseName,
+    refName,
+    queryString,
+    rows: { list: [] as row.Row[] },
+    columns: [] as column.Column[],
+    queryExecutionStatus: QueryExecutionStatus.Success,
+    queryExecutionMessage: executionMessage,
+    isMutation: false,
+    warnings,
+  };
+  if (doltRows.length === 0) return base;
+
+  const list = doltRows.slice(0, ROW_LIMIT).map(row.fromDoltRowRes);
+  const columns: column.Column[] = Object.keys(doltRows[0]).map(c => ({
+    name: c,
+    isPrimaryKey: false,
+    type: "unknown",
+  }));
+  return {
+    ...base,
+    columns,
+    rows: {
+      list,
+      nextOffset: getNextOffset(doltRows.length, offset),
+    },
+  };
+}
+
 export function fromSqlSelectRow(
   databaseName: string,
   refName: string,

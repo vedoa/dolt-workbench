@@ -117,6 +117,8 @@ export const refetchUpdateDatabaseQueriesCacheEvict: RefetchOptions = {
   updateCache(cache: TCacheShape) {
     [
       "rows",
+      "selectTableRows",
+      "workingDiffRows",
       "tables",
       "table",
       "tableNames",

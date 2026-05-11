@@ -1,8 +1,12 @@
 import { useDataTableContext } from "@contexts/dataTable";
-import { useSqlEditorContext } from "@contexts/sqleditor";
 import { Button } from "@dolthub/react-components";
 import { ColumnForDataTableFragment } from "@gen/graphql-types";
-import useSqlBuilder from "@hooks/useSqlBuilder";
+import {
+  appendWhere,
+  parseStackingParams,
+  pushStack,
+} from "@lib/dataTableParams";
+import { useRouter } from "next/router";
 import css from "./index.module.css";
 import { convertTimestamp } from "./utils";
 
@@ -13,27 +17,27 @@ type Props = {
 };
 
 export default function FilterButton({ col, value, dataCy }: Props) {
-  const { executeQuery } = useSqlEditorContext();
-  const { params } = useDataTableContext();
+  const router = useRouter();
+  const { params, tableShape } = useDataTableContext();
   const { tableName } = params;
-  const { addWhereClauseToSelect } = useSqlBuilder();
 
-  if (!tableName) return null;
+  if (!tableName || !tableShape) return null;
 
-  const onClick = async () => {
-    if (!col) {
-      return;
-    }
+  const onClick = () => {
+    if (!col) return;
     // TODO: timestamp not working for postgres
     const val = col.type.toLowerCase().includes("timestamp")
       ? convertTimestamp(value)
       : value;
-    const query = addWhereClauseToSelect(
-      tableName,
-      [{ col: col.name, val }],
-      params.q,
-    );
-    await executeQuery({ ...params, query });
+    const stack = parseStackingParams(router.query);
+    pushStack(router, {
+      ...stack,
+      where: appendWhere(stack.where, {
+        column: col.name,
+        value: val,
+        type: col.type,
+      }),
+    });
   };
 
   return (

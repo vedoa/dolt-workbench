@@ -419,6 +419,7 @@ type Query {
   doltSchemas(refName: String!, databaseName: String!, schemaName: String): [SchemaItem!]!
   views(refName: String!, databaseName: String!, schemaName: String): [SchemaItem!]!
   doltProcedures(databaseName: String!, refName: String!): [SchemaItem!]!
+  selectTableRows(schemaName: String, tableName: String!, refName: String!, databaseName: String!, orderBy: [OrderByClause!], where: [ColumnValueInput!], excludePks: [PkRow!], projection: [String!], offset: Int): SqlSelect!
   sqlSelect(schemaName: String, refName: String!, databaseName: String!, queryString: String!, offset: Int): SqlSelect!
   sqlSelectForCsvDownload(schemaName: String, refName: String!, databaseName: String!, queryString: String!, offset: Int): String!
   status(databaseName: String!, refName: String!): [Status!]!
@@ -460,6 +461,20 @@ input ColumnValueInput {
   column: String!
   value: String
   type: String
+}
+
+input OrderByClause {
+  column: String!
+  direction: SortDirection!
+}
+
+enum SortDirection {
+  Asc
+  Desc
+}
+
+input PkRow {
+  values: [ColumnValueInput!]!
 }
 
 input TestIdentifierArgs {

@@ -3,9 +3,9 @@ import { useDataTableContext } from "@contexts/dataTable";
 import { Button } from "@dolthub/react-components";
 import { useOnClickOutside } from "@dolthub/react-hooks";
 import { RowForDataTableFragment } from "@gen/graphql-types";
-import useSqlBuilder from "@hooks/useSqlBuilder";
-import { RefParams } from "@lib/params";
-import { sqlQuery } from "@lib/urls";
+import { stackingParamsToQuery } from "@lib/dataTableParams";
+import { RefOptionalSchemaParams } from "@lib/params";
+import { table } from "@lib/urls";
 import { BiCaretRight } from "@react-icons/all-files/bi/BiCaretRight";
 import cx from "classnames";
 import { useRef, useState } from "react";
@@ -19,7 +19,7 @@ type Props = {
 };
 
 export default function ForeignKeyButton(props: Props) {
-  const { params, foreignKeys } = useDataTableContext();
+  const { params, foreignKeys, tableShape } = useDataTableContext();
   const foreignKeyMap = getForeignKeyMap(
     foreignKeys,
     props.row,
@@ -31,7 +31,7 @@ export default function ForeignKeyButton(props: Props) {
   const tableDropdownRef = useRef<HTMLSpanElement>(null);
   useOnClickOutside(tableDropdownRef, () => setShowTableDropdown(false));
 
-  if (!hasForeignKey) return null;
+  if (!hasForeignKey || !tableShape) return null;
 
   return (
     <span ref={tableDropdownRef} className={css.foreignKey}>
@@ -44,12 +44,12 @@ export default function ForeignKeyButton(props: Props) {
       </Button.Link>
       {showTableDropdown && (
         <span className={css.foreignKeyDropdown}>
-          {Object.keys(foreignKeyMap).map(table => (
+          {Object.keys(foreignKeyMap).map(t => (
             <FKTableLink
               params={params}
-              table={table}
-              columns={foreignKeyMap[table]}
-              key={table}
+              table={t}
+              columns={foreignKeyMap[t]}
+              key={t}
             />
           ))}
         </span>
@@ -59,24 +59,26 @@ export default function ForeignKeyButton(props: Props) {
 }
 
 type FKTableLinkProps = {
-  params: RefParams;
+  params: RefOptionalSchemaParams;
   table: string;
   columns: ReferencedColumn[];
 };
 
 function FKTableLink(props: FKTableLinkProps) {
-  const { addWhereClauseToSelect } = useSqlBuilder();
-
-  const q = addWhereClauseToSelect(
-    props.table,
-    props.columns.map(c => {
-      return { col: c.columnName, val: c.columnValue };
-    }),
-  );
+  const where = props.columns.map(c => ({
+    column: c.columnName,
+    value: c.columnValue,
+  }));
+  const route = table({
+    databaseName: props.params.databaseName,
+    refName: props.params.refName,
+    schemaName: props.params.schemaName,
+    tableName: props.table,
+  }).withQuery(stackingParamsToQuery({ where }));
 
   return (
     <span key={props.table}>
-      <Link {...sqlQuery({ ...props.params, q })}>{props.table}</Link>
+      <Link {...route}>{props.table}</Link>
     </span>
   );
 }
