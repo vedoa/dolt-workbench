@@ -12,7 +12,6 @@ import css from "./index.module.css";
 type Props = ModalProps & {
   params: RefParams;
   status: StatusFragment[];
-  forDiffPage?: boolean;
 };
 
 export default function ResetModal(props: Props) {
@@ -78,14 +77,16 @@ export default function ResetModal(props: Props) {
                 <td>
                   {st.staged ? (
                     <Button.Link
-                      onClick={() => onPerRow("DOLT_RESET", st.tableName)}
+                      onClick={async () => onPerRow("DOLT_RESET", st.tableName)}
                       disabled={callLoading}
                     >
                       Unstage
                     </Button.Link>
                   ) : (
                     <Button.Link
-                      onClick={() => onPerRow("DOLT_CHECKOUT", st.tableName)}
+                      onClick={async () =>
+                        onPerRow("DOLT_CHECKOUT", st.tableName)
+                      }
                       disabled={callLoading}
                     >
                       Restore

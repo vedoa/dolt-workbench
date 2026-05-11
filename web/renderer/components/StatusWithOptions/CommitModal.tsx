@@ -43,6 +43,11 @@ export default function CommitModal(props: Props) {
     }
   }, [userHeaders]);
 
+  const onClose = () => {
+    props.setIsOpen(false);
+    setMsg(defaultMsg);
+  };
+
   const onSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
     if (isElectron && !hasHeaders && authorName && authorEmail) {
@@ -57,11 +62,6 @@ export default function CommitModal(props: Props) {
       ...getAuthorArgs(authorName, authorEmail),
     ]);
     if (success) onClose();
-  };
-
-  const onClose = () => {
-    props.setIsOpen(false);
-    setMsg(defaultMsg);
   };
 
   return (
