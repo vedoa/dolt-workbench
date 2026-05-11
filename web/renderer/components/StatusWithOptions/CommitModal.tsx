@@ -1,13 +1,11 @@
-import { FormInput, FormModal, Textarea } from "@dolthub/react-components";
+import { FormModal, FormInput, Textarea } from "@dolthub/react-components";
 import { useEffectAsync } from "@dolthub/react-hooks";
 import { Maybe } from "@dolthub/web-utils";
 import { StatusFragment } from "@gen/graphql-types";
-import useSqlBuilder from "@hooks/useSqlBuilder";
+import useCallProcedure from "@hooks/useCallProcedure";
 import { useUserHeaders } from "@hooks/useUserHeaders";
 import { ModalProps } from "@lib/modalProps";
 import { RefParams } from "@lib/params";
-import { sqlQuery } from "@lib/urls";
-import { useRouter } from "next/router";
 import { SyntheticEvent, useState } from "react";
 import css from "./index.module.css";
 
@@ -19,19 +17,17 @@ type Props = ModalProps & {
 const isElectron = process.env.NEXT_PUBLIC_FOR_ELECTRON === "true";
 
 export default function CommitModal(props: Props) {
-  const router = useRouter();
   const defaultMsg = getDefaultCommitMsg(props.params.refName, props.status);
   const [msg, setMsg] = useState(defaultMsg);
   const [authorName, setAuthorName] = useState("");
   const [authorEmail, setAuthorEmail] = useState("");
   const userHeaders = useUserHeaders();
-  const { getCallProcedure } = useSqlBuilder();
+  const { callProcedure, loading } = useCallProcedure(props.params);
 
   const headerName = userHeaders?.user;
   const headerEmail = userHeaders?.email;
   const hasHeaders = !!headerName || !!headerEmail;
 
-  // Load stored author for Electron, or populate from headers
   useEffectAsync(async () => {
     if (hasHeaders) {
       setAuthorName(headerName ?? "");
@@ -49,20 +45,18 @@ export default function CommitModal(props: Props) {
 
   const onSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    // Persist author on desktop when not using headers
     if (isElectron && !hasHeaders && authorName && authorEmail) {
       await window.ipc.setCommitAuthor({
         name: authorName,
         email: authorEmail,
       });
     }
-    const q = getCallProcedure("DOLT_COMMIT", [
+    const { success } = await callProcedure("DOLT_COMMIT", [
       "-Am",
       msg,
       ...getAuthorArgs(authorName, authorEmail),
     ]);
-    const { href, as } = sqlQuery({ ...props.params, q });
-    router.push(href, as).catch(console.error);
+    if (success) onClose();
   };
 
   const onClose = () => {
@@ -76,7 +70,7 @@ export default function CommitModal(props: Props) {
       title="Create commit"
       isOpen={props.isOpen}
       onRequestClose={onClose}
-      disabled={!msg.length}
+      disabled={!msg.length || loading}
       btnText="Commit"
     >
       <div>
