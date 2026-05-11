@@ -1,11 +1,17 @@
 import DocsLink from "@components/links/DocsLink";
-import Link from "@components/links/Link";
+import { useApolloClient } from "@apollo/client";
+import { useSqlEditorContext } from "@contexts/sqleditor";
 import { Button, Modal } from "@dolthub/react-components";
-import { CommitForHistoryFragment } from "@gen/graphql-types";
-import useSqlBuilder from "@hooks/useSqlBuilder";
+import {
+  CommitForHistoryFragment,
+  useCallProcedureMutation,
+} from "@gen/graphql-types";
+import useMutation from "@hooks/useMutation";
 import { ModalProps } from "@lib/modalProps";
 import { RefParams } from "@lib/params";
-import { sqlQuery } from "@lib/urls";
+import { refetchUpdateDatabaseQueriesCacheEvict } from "@lib/refetchQueries";
+import { ref } from "@lib/urls";
+import { useRouter } from "next/router";
 
 type Props = ModalProps & {
   commit: CommitForHistoryFragment;
@@ -13,24 +19,48 @@ type Props = ModalProps & {
 };
 
 export default function ResetModal(props: Props) {
-  const { getCallProcedure } = useSqlBuilder();
+  const { setEditorString, setError, setExecutionMessage } =
+    useSqlEditorContext();
+  const { mutateFn: callProcedure, loading } = useMutation({
+    hook: useCallProcedureMutation,
+  });
+  const client = useApolloClient();
+  const router = useRouter();
+
+  const onClick = async () => {
+    const res = await callProcedure({
+      variables: {
+        databaseName: props.params.databaseName,
+        refName: props.params.refName,
+        name: "DOLT_RESET",
+        args: ["--hard", props.commit.commitId],
+      },
+    });
+    if (res.success && res.data?.callProcedure) {
+      setEditorString(res.data.callProcedure.queryString);
+      setExecutionMessage(res.data.callProcedure.executionMessage);
+      client
+        .refetchQueries(refetchUpdateDatabaseQueriesCacheEvict)
+        .catch(console.error);
+      props.setIsOpen(false);
+      const { href, as } = ref(props.params).withQuery({
+        executedSql: res.data.callProcedure.queryString,
+      });
+      router.push(href, as).catch(console.error);
+    } else if (res.error) {
+      setError(res.error);
+    }
+  };
+
   return (
     <Modal
       {...props}
       onRequestClose={() => props.setIsOpen(false)}
       title="Reset Commit"
       button={
-        <Link
-          {...sqlQuery({
-            ...props.params,
-            q: getCallProcedure("DOLT_RESET", [
-              "--hard",
-              props.commit.commitId,
-            ]),
-          })}
-        >
-          <Button>Reset commit</Button>
-        </Link>
+        <Button onClick={onClick} disabled={loading}>
+          Reset commit
+        </Button>
       }
     >
       <p>

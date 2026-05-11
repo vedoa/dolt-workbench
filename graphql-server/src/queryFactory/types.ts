@@ -105,6 +105,11 @@ export type CreateViewArgs = RefMaybeSchemaArgs & {
   queryString: string;
 };
 
+export type CallProcedureArgs = RefArgs & {
+  name: string;
+  args: string[];
+};
+
 export type OrderByClause = {
   column: string;
   direction: "ASC" | "DESC";

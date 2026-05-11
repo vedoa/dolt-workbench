@@ -6,6 +6,7 @@ import { TableDetails } from "../../tables/table.model";
 import { ROW_LIMIT } from "../../utils";
 import { BaseQueryFactory } from "../base";
 import * as t from "../types";
+import { buildCallProcedure } from "../build/buildCallProcedure";
 import { buildCreateView } from "../build/buildCreateView";
 import { buildDeleteRow } from "../build/buildDeleteRow";
 import { buildDropColumn } from "../build/buildDropColumn";
@@ -258,6 +259,22 @@ export class MySQLQueryFactory
     return this.queryQR(
       async qr => {
         const built = buildCreateView(qr.manager, args.name, args.queryString);
+        await built.execute();
+        return {
+          rowsAffected: 0,
+          queryString: built.displaySql,
+          executionMessage: DDL_EXECUTION_MESSAGE,
+        };
+      },
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async callProcedure(args: t.CallProcedureArgs): Promise<t.MutationResult> {
+    return this.queryQR(
+      async qr => {
+        const built = buildCallProcedure(qr.manager, args.name, args.args);
         await built.execute();
         return {
           rowsAffected: 0,

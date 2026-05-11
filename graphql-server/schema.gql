@@ -506,6 +506,7 @@ type Mutation {
   dropColumn(schemaName: String, tableName: String!, refName: String!, databaseName: String!, columnName: String!): MutationResult!
   dropTable(tableName: String!, refName: String!, databaseName: String!, schemaName: String): MutationResult!
   createView(schemaName: String, refName: String!, databaseName: String!, name: String!, queryString: String!): MutationResult!
+  callProcedure(refName: String!, databaseName: String!, name: String!, args: [String!]!): MutationResult!
   restoreAllTables(databaseName: String!, refName: String!): Boolean!
   createTag(tagName: String!, databaseName: String!, message: String, fromRefName: String!, author: AuthorInfo): String!
   deleteTag(databaseName: String!, tagName: String!): Boolean!

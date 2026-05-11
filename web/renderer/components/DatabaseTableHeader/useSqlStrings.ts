@@ -3,6 +3,7 @@ import { useSqlEditorContext } from "@contexts/sqleditor";
 import useSqlBuilder from "@hooks/useSqlBuilder";
 import { isDoltSystemTable } from "@lib/doltSystemTables";
 import { DatabasePageParams } from "@lib/params";
+import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
 
 export const DEFAULT_LIMIT = 1000;
@@ -16,6 +17,11 @@ export function useSqlStrings(
     useSqlBuilder();
   const { editorString, setEditorString } = useSqlEditorContext();
   const { executedQueryString } = useDataTableContext();
+  const router = useRouter();
+  const executedSqlParam =
+    typeof router.query.executedSql === "string"
+      ? router.query.executedSql
+      : undefined;
   const defaultQuery = getDefaultQueryString(params.schemaName);
 
   const flattenNewLines = (query: string) =>
@@ -37,12 +43,20 @@ export function useSqlStrings(
       return sampleCreateQueryForEmpty();
     }
     if (params.q) return params.q;
+    if (executedSqlParam) return addEmptyLines([executedSqlParam]);
     if (executedQueryString) return addEmptyLines([executedQueryString]);
     if (!params.tableName || isDoltSystemTable(params.tableName)) {
       return addEmptyLines([defaultQuery]);
     }
     return addEmptyLines([selectFromTable(params.tableName, DEFAULT_LIMIT)]);
-  }, [params.q, params.tableName, empty, isPostgres, executedQueryString]);
+  }, [
+    params.q,
+    params.tableName,
+    empty,
+    isPostgres,
+    executedQueryString,
+    executedSqlParam,
+  ]);
 
   useEffect(() => {
     const sqlQuery = getEditorString();
