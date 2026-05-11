@@ -10,10 +10,7 @@ const pgEm = new EntityManager(
 
 describe("buildCallProcedure", () => {
   it("emits CALL for mysql", () => {
-    const out = buildCallProcedure(mysqlEm, "DOLT_RESET", [
-      "--hard",
-      "abc123",
-    ]);
+    const out = buildCallProcedure(mysqlEm, "DOLT_RESET", ["--hard", "abc123"]);
     expect(out.sql).toBe("CALL DOLT_RESET('--hard', 'abc123')");
     expect(out.displaySql).toBe(out.sql);
     expect(out.params).toEqual([]);
