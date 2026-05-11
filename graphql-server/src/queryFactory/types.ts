@@ -67,8 +67,6 @@ export type SqlSelectResult = {
   isMutation: boolean;
   executionMessage: string;
   warnings?: string[];
-  // Populated only by selectTableRows (where the server constructed the SQL
-  // and echoes it back to the UI). Other paths leave this undefined.
   queryString?: string;
 };
 export type RawRowsWithDiff = RawRowWithDiff[];

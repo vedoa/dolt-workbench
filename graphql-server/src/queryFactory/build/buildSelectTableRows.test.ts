@@ -8,9 +8,6 @@ const pgEm = new EntityManager(
   new DataSource({ type: "postgres", host: "", database: "" }),
 );
 
-// The duplicated `FROM users users` in the assertions is TypeORM's required
-// FROM-clause alias; we pass the trailing segment so the alias is just the
-// table name rather than the schema-qualified form.
 describe("buildSelectTableRows", () => {
   describe("mysql", () => {
     it("emits SELECT * with limit when no other args", () => {

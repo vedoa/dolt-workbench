@@ -96,8 +96,6 @@ export function removeFromProjection(
   column: string,
   allColumns: string[],
 ): string[] {
-  // First hide materializes the implicit `*` projection into an explicit
-  // list so subsequent hides have something to remove from.
   const base = current && current.length > 0 ? current : allColumns;
   return base.filter(c => c !== column);
 }

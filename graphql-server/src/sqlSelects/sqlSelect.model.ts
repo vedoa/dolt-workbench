@@ -39,9 +39,6 @@ export class SqlSelect {
   warnings?: string[];
 }
 
-// `doltRows` is already offset+limit on the SQL side (up to ROW_LIMIT+1 rows
-// starting at `offset`); unlike fromSqlSelectRow this function does not slice
-// by offset.
 export function fromServerPaginatedRows(
   databaseName: string,
   refName: string,
@@ -52,9 +49,8 @@ export function fromServerPaginatedRows(
   warnings?: string[],
 ): SqlSelect {
   const base = {
-    // Offset is part of _id so paginated pages don't collide as one Apollo
-    // cache entity (displaySql strips OFFSET, so without this every page
-    // would normalize to the same key and overwrite each other).
+    // Offset is part of _id so paginated pages don't collide on one Apollo
+    // cache entity (displaySql strips OFFSET).
     _id: `/databases/${databaseName}/refs/${refName}/queries/${queryString}/offset/${offset}`,
     databaseName,
     refName,

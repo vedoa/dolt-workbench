@@ -58,8 +58,6 @@ export function buildSelectTableRows(
     });
   }
 
-  // Capture displaySql before pagination so the editor doesn't show the
-  // internal `LIMIT N+1`/`OFFSET` has-more plumbing.
   const [preLimitSql, preLimitParams] = qb.getQueryAndParameters() as [
     string,
     string[],

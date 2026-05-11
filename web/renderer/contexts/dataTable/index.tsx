@@ -59,12 +59,7 @@ type DataTableContextType = {
   workingDiffRowsToggled?: boolean;
   setWorkingDiffRowsToggled: (toggled: boolean) => void;
   diffExists: boolean;
-  // True on app-generated table-view routes; false on user-typed editor
-  // routes. Gates cell buttons (sort/filter/hide/etc.) since we only own
-  // the query shape in the former.
   tableShape: boolean;
-  // displaySql from selectTableRows when stacking is active; echoed into the
-  // editor so users see the SQL their cell-button actions produced.
   executedQueryString?: string;
 };
 
@@ -85,9 +80,8 @@ type TableProps = Props & {
 
 function ProviderForTableName(props: TableProps) {
   const router = useRouter();
-  // router.query is a fresh object each render; depend on the individual
-  // param strings instead so `stack` stays referentially stable and
-  // downstream loadMore doesn't churn into an InfiniteScroller loop.
+  // Depend on the individual param strings: router.query is a fresh object
+  // every render and would make `stack` reference-unstable.
   const orderByParam = router.query.orderBy;
   const whereParam = router.query.where;
   const excludePksParam = router.query.excludePks;
@@ -118,10 +112,6 @@ function ProviderForTableName(props: TableProps) {
     },
   });
 
-  // No-stacking path: prefer the with-diff rows so working-diff highlighting
-  // shows. The diff query doesn't know about orderBy/where/projection, so
-  // when stacking is active we fall back to selectTableRowsRes and lose the
-  // diff annotations (combining diff + stacking is a follow-up).
   const rowWithDiffRes = useRowsForDataTableQuery({
     variables: { ...props.params, withDiff: true },
   });
@@ -162,9 +152,7 @@ function ProviderForTableName(props: TableProps) {
             selectTableRowsRes.data?.selectTableRows.rows.list),
     );
     setOffset(selectTableRowsRes.data?.selectTableRows.rows.nextOffset);
-    // Reset the loadMore guard since the query result just changed; a stale
-    // lastOffset matching the new first-page nextOffset would falsely
-    // disable pagination.
+    // Stale lastOffset would falsely disable pagination after a query change.
     setLastOffset(undefined);
   }, [selectTableRowsRes.data, rowWithDiffRes.data, hasStacking]);
 
@@ -200,8 +188,6 @@ function ProviderForTableName(props: TableProps) {
     setRows(prevRows => (prevRows ?? []).concat(newRows));
     setOffset(newOffset);
 
-    // The diff-annotation overlay query has no stacking inputs, so skip it
-    // when stacking is active and keep the unannotated rows.
     if (hasStacking) return;
 
     const diffRes = await rowWithDiffRes.client.query<
@@ -266,9 +252,7 @@ function ProviderForTableName(props: TableProps) {
     setPendingRow(emptyRow);
   };
 
-  // Keep columns aligned with columnValues when projection is active: the
-  // server only returns the projected columns, and Row.tsx returns null on
-  // length mismatch (which otherwise triggers an InfiniteScroll loop).
+  // Align columns with columnValues; Row.tsx returns null on length mismatch.
   const allColumns = tableRes.data?.table.columns;
   const visibleColumns = useMemo(() => {
     if (!allColumns) return allColumns;
