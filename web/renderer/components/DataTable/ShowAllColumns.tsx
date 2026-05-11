@@ -1,9 +1,6 @@
 import { useDataTableContext } from "@contexts/dataTable";
 import { Button } from "@dolthub/react-components";
-import {
-  parseStackingParams,
-  pushStack,
-} from "@lib/dataTableParams";
+import { parseStackingParams, pushStack } from "@lib/dataTableParams";
 import { useRouter } from "next/router";
 import css from "./index.module.css";
 

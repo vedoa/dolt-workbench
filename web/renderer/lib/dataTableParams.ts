@@ -46,9 +46,7 @@ export function stackingParamsToQuery(
     [KEYS.orderBy]: stack.orderBy?.length
       ? JSON.stringify(stack.orderBy)
       : undefined,
-    [KEYS.where]: stack.where?.length
-      ? JSON.stringify(stack.where)
-      : undefined,
+    [KEYS.where]: stack.where?.length ? JSON.stringify(stack.where) : undefined,
     [KEYS.excludePks]: stack.excludePks?.length
       ? JSON.stringify(stack.excludePks)
       : undefined,

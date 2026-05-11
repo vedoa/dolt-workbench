@@ -69,11 +69,13 @@ export function fromServerPaginatedRows(
   if (doltRows.length === 0) return base;
 
   const list = doltRows.slice(0, ROW_LIMIT).map(row.fromDoltRowRes);
-  const columns: column.Column[] = Object.keys(doltRows[0]).map(c => ({
-    name: c,
-    isPrimaryKey: false,
-    type: "unknown",
-  }));
+  const columns: column.Column[] = Object.keys(doltRows[0]).map(c => {
+    return {
+      name: c,
+      isPrimaryKey: false,
+      type: "unknown",
+    };
+  });
   return {
     ...base,
     columns,

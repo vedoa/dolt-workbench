@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { useDataTableContext } from "@contexts/dataTable";
 import { Button } from "@dolthub/react-components";
-import {
-  ColumnForDataTableFragment,
-  SortDirection,
-} from "@gen/graphql-types";
+import { ColumnForDataTableFragment, SortDirection } from "@gen/graphql-types";
 import {
   getColumnSort,
   parseStackingParams,

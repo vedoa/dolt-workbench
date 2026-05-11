@@ -25,9 +25,7 @@ describe("buildSelectTableRows", () => {
         projection: ["id", "name"],
         limit: 51,
       });
-      expect(out.sql).toBe(
-        "SELECT `id`, `name` FROM `users` `users` LIMIT 51",
-      );
+      expect(out.sql).toBe("SELECT `id`, `name` FROM `users` `users` LIMIT 51");
     });
 
     it("emits SELECT * when projection is empty", () => {
@@ -127,9 +125,7 @@ describe("buildSelectTableRows", () => {
         offset: 100,
         limit: 51,
       });
-      expect(out.sql).toBe(
-        "SELECT * FROM `users` `users` LIMIT 51 OFFSET 100",
-      );
+      expect(out.sql).toBe("SELECT * FROM `users` `users` LIMIT 51 OFFSET 100");
     });
 
     it("omits OFFSET when offset is 0", () => {

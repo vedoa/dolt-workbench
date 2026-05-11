@@ -51,9 +51,7 @@ export class SelectTableRowsResolver {
   constructor(private readonly conn: ConnectionProvider) {}
 
   @Query(_returns => SqlSelect)
-  async selectTableRows(
-    @Args() args: SelectTableRowsArgs,
-  ): Promise<SqlSelect> {
+  async selectTableRows(@Args() args: SelectTableRowsArgs): Promise<SqlSelect> {
     const conn = this.conn.connection();
     const offset = args.offset ?? 0;
     const res = await conn.selectTableRows(args);

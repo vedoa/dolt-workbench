@@ -133,8 +133,8 @@ function ProviderForTableName(props: TableProps) {
   const [rows, setRows] = useState(
     hasStacking
       ? selectTableRowsRes.data?.selectTableRows.rows.list
-      : rowWithDiffRes.data?.rows.list ??
-          selectTableRowsRes.data?.selectTableRows.rows.list,
+      : (rowWithDiffRes.data?.rows.list ??
+          selectTableRowsRes.data?.selectTableRows.rows.list),
   );
   const [workingDiffRows, setWorkingDiffRows] = useState(
     diffOnlyRes.data?.workingDiffRows.list,
@@ -158,8 +158,8 @@ function ProviderForTableName(props: TableProps) {
     setRows(
       hasStacking
         ? selectTableRowsRes.data?.selectTableRows.rows.list
-        : rowWithDiffRes.data?.rows.list ??
-            selectTableRowsRes.data?.selectTableRows.rows.list,
+        : (rowWithDiffRes.data?.rows.list ??
+            selectTableRowsRes.data?.selectTableRows.rows.list),
     );
     setOffset(selectTableRowsRes.data?.selectTableRows.rows.nextOffset);
     // Reset the loadMore guard since the query result just changed; a stale
