@@ -630,7 +630,9 @@ export class DoltgresQueryFactory
     );
   }
 
-  async doltCommitDiff(args: t.DoltCommitDiffArgs): Promise<string> {
+  async doltCommitDiff(
+    args: t.DoltCommitDiffArgs,
+  ): Promise<t.SqlSelectResult> {
     return this.queryQR(
       async qr => {
         const { baseTableName, schemaName } = await this.normalizeTable(
@@ -654,12 +656,18 @@ export class DoltgresQueryFactory
           tableName: `dolt_commit_diff_${baseTableName}`,
           schemaName,
         });
-        return buildDoltCommitDiff(qr.manager, target, {
+        const built = buildDoltCommitDiff(qr.manager, target, {
           fromCommitId: args.fromCommitId,
           toCommitId: args.toCommitId,
           columnNames,
           type: args.type,
-        }).displaySql;
+        });
+        return {
+          rows: await built.execute(),
+          isMutation: false,
+          executionMessage: "",
+          queryString: built.displaySql,
+        };
       },
       args.databaseName,
       args.refName,

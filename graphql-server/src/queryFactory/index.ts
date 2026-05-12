@@ -93,7 +93,7 @@ export declare class QueryFactory {
 
   callProcedure(args: t.CallProcedureArgs): Promise<t.MutationResult>;
 
-  doltCommitDiff(args: t.DoltCommitDiffArgs): Promise<string>;
+  doltCommitDiff(args: t.DoltCommitDiffArgs): Promise<t.SqlSelectResult>;
 
   doltCellDiff(args: t.DoltCellLookupArgs): Promise<t.SqlSelectResult>;
 

@@ -384,8 +384,10 @@ export class MySQLQueryFactory
     throw notDoltError("get working diff rows");
   }
 
-  async doltCommitDiff(_args: t.DoltCommitDiffArgs): Promise<string> {
-    throw notDoltError("dolt commit diff preview");
+  async doltCommitDiff(
+    _args: t.DoltCommitDiffArgs,
+  ): Promise<t.SqlSelectResult> {
+    throw notDoltError("dolt commit diff");
   }
 
   async doltCellDiff(_args: t.DoltCellLookupArgs): Promise<t.SqlSelectResult> {

@@ -36,10 +36,20 @@ export class DoltCellLookupArgs extends TableMaybeSchemaArgs {
 export class DoltDiffResolver {
   constructor(private readonly conn: ConnectionProvider) {}
 
-  @Query(_returns => String)
-  async doltCommitDiff(@Args() args: DoltCommitDiffArgs): Promise<string> {
+  @Query(_returns => SqlSelect)
+  async doltCommitDiff(
+    @Args() args: DoltCommitDiffArgs,
+  ): Promise<SqlSelect> {
     const conn = this.conn.connection();
-    return conn.doltCommitDiff(args);
+    const res = await conn.doltCommitDiff(args);
+    return fromServerPaginatedRows(
+      args.databaseName,
+      args.refName,
+      res.rows,
+      res.executionMessage,
+      res.queryString ?? "",
+      0,
+    );
   }
 
   @Query(_returns => SqlSelect)

@@ -647,7 +647,9 @@ export class DoltQueryFactory
     );
   }
 
-  async doltCommitDiff(args: t.DoltCommitDiffArgs): Promise<string> {
+  async doltCommitDiff(
+    args: t.DoltCommitDiffArgs,
+  ): Promise<t.SqlSelectResult> {
     const columns = await introspectColumns(
       async () => this.getTableInfo(args),
       args.tableName,
@@ -655,13 +657,24 @@ export class DoltQueryFactory
     const excluded = new Set(args.excludedColumns ?? []);
     const columnNames = columns.map(c => c.name).filter(n => !excluded.has(n));
     return this.queryForBuilder(
-      async em =>
-        buildDoltCommitDiff(em, `dolt_commit_diff_${args.tableName}`, {
-          fromCommitId: args.fromCommitId,
-          toCommitId: args.toCommitId,
-          columnNames,
-          type: args.type,
-        }).displaySql,
+      async em => {
+        const built = buildDoltCommitDiff(
+          em,
+          `dolt_commit_diff_${args.tableName}`,
+          {
+            fromCommitId: args.fromCommitId,
+            toCommitId: args.toCommitId,
+            columnNames,
+            type: args.type,
+          },
+        );
+        return {
+          rows: await built.execute(),
+          isMutation: false,
+          executionMessage: "",
+          queryString: built.displaySql,
+        };
+      },
       args.databaseName,
       args.refName,
     );
