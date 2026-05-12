@@ -8,15 +8,23 @@ import { SchemaItem } from "../../schemas/schema.model";
 import { systemTableValues } from "../../systemTables/systemTable.enums";
 import { TableDetails } from "../../tables/table.model";
 import { handleTableNotFound } from "../../utils";
+import { buildDoltCellDiff } from "../build/buildDoltCellDiff";
+import { buildDoltCellHistory } from "../build/buildDoltCellHistory";
 import * as dem from "../dolt/doltEntityManager";
 import {
   getAuthorString,
   getTestIdentifierArg,
   handleRefNotFound,
+  introspectColumns,
+  pkValuesWithTypes,
   unionCols,
 } from "../dolt/utils";
 import { PostgresQueryFactory } from "../postgres";
-import { getSchema, tableWithoutSchema } from "../postgres/utils";
+import {
+  getSchema,
+  tableWithSchema,
+  tableWithoutSchema,
+} from "../postgres/utils";
 import * as t from "../types";
 import * as qh from "./queries";
 
@@ -619,6 +627,79 @@ export class DoltgresQueryFactory
       args.databaseName,
       args.refName,
     );
+  }
+
+  async doltCellDiff(args: t.DoltCellLookupArgs): Promise<string> {
+    return this.queryQR(
+      async qr => {
+        const { baseTableName, schemaName } = await this.normalizeTable(
+          qr,
+          args,
+        );
+        const columns = await introspectColumns(
+          async () =>
+            this.getTableInfo({
+              ...args,
+              tableName: baseTableName,
+              schemaName,
+            }),
+          args.tableName,
+        );
+        const target = tableWithSchema({
+          tableName: `dolt_diff_${baseTableName}`,
+          schemaName,
+        });
+        return buildDoltCellDiff(qr.manager, target, {
+          pkValues: pkValuesWithTypes(args.pkValues, columns),
+          columnNames: columns.map(c => c.name),
+          columnName: args.columnName,
+        }).displaySql;
+      },
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async doltCellHistory(args: t.DoltCellLookupArgs): Promise<string> {
+    return this.queryQR(
+      async qr => {
+        const { baseTableName, schemaName } = await this.normalizeTable(
+          qr,
+          args,
+        );
+        const columns = await introspectColumns(
+          async () =>
+            this.getTableInfo({
+              ...args,
+              tableName: baseTableName,
+              schemaName,
+            }),
+          args.tableName,
+        );
+        const target = tableWithSchema({
+          tableName: `dolt_history_${baseTableName}`,
+          schemaName,
+        });
+        return buildDoltCellHistory(qr.manager, target, {
+          pkValues: pkValuesWithTypes(args.pkValues, columns),
+          columnNames: columns.map(c => c.name),
+          columnName: args.columnName,
+        }).displaySql;
+      },
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  // Some callers (diff summaries) pass tableName schema-qualified
+  // (e.g. "public.customers"). Strip it so prefixed targets like
+  // dolt_commit_diff_X aren't constructed from the qualified form.
+  private async normalizeTable(
+    qr: QueryRunner,
+    args: t.TableMaybeSchemaArgs,
+  ): Promise<{ baseTableName: string; schemaName: string }> {
+    const schemaName = await getSchema(qr, args);
+    return { baseTableName: tableWithoutSchema(args.tableName), schemaName };
   }
 }
 

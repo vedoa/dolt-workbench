@@ -110,6 +110,11 @@ export type CallProcedureArgs = RefArgs & {
   args: string[];
 };
 
+export type DoltCellLookupArgs = TableMaybeSchemaArgs & {
+  pkValues: ColumnValue[];
+  columnName?: string;
+};
+
 export type OrderByClause = {
   column: string;
   direction: "ASC" | "DESC";

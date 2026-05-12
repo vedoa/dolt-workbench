@@ -93,6 +93,10 @@ export declare class QueryFactory {
 
   callProcedure(args: t.CallProcedureArgs): Promise<t.MutationResult>;
 
+  doltCellDiff(args: t.DoltCellLookupArgs): Promise<string>;
+
+  doltCellHistory(args: t.DoltCellLookupArgs): Promise<string>;
+
   getSchemas(
     args: t.RefMaybeSchemaArgs,
     type?: SchemaType,
