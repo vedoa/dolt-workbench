@@ -1,22 +1,29 @@
 import useViewList from "@components/Views/useViewList";
 import { useDataTableContext } from "@contexts/dataTable";
-import { useSqlEditorContext } from "@contexts/sqleditor";
-import { Button, Loader } from "@dolthub/react-components";
+import { Button } from "@dolthub/react-components";
 import {
   ColumnForDataTableFragment,
+  ColumnValueInput,
   RowForDataTableFragment,
   SchemaItemFragment,
 } from "@gen/graphql-types";
-import { useGetDoltDiffQuery } from "@hooks/useDoltQueryBuilder/useGetDoltDiffQuery";
 import useSqlParser from "@hooks/useSqlParser";
+import { encodeCellHistory } from "@lib/cellHistoryUrl";
 import { isDoltSystemTable } from "@lib/doltSystemTables";
-import { TableParams } from "@lib/params";
+import { TableOptionalSchemaParams } from "@lib/params";
+import { query } from "@lib/urls";
 import { BsFillQuestionCircleFill } from "@react-icons/all-files/bs/BsFillQuestionCircleFill";
 import cx from "classnames";
-import { ReactNode, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { ReactNode } from "react";
 import TableType from "./TableType";
 import css from "./index.module.css";
-import { getTableColsFromQueryCols, isKeyless, queryShowingPKs } from "./utils";
+import {
+  convertTimestamp,
+  getTableColsFromQueryCols,
+  isKeyless,
+  queryShowingPKs,
+} from "./utils";
 
 type Props = {
   cidx: number;
@@ -28,42 +35,49 @@ type Props = {
 type InnerProps = Omit<Props, "doltDisabled"> & {
   disabled?: boolean;
   disabledPopup?: ReactNode;
-  params: TableParams;
+  params: TableOptionalSchemaParams;
 };
 
 function Inner(props: InnerProps) {
+  const router = useRouter();
   const currCol = props.columns[props.cidx];
-  const { executeQuery } = useSqlEditorContext();
-  const [submitting, setSubmitting] = useState(false);
   const isPK = currCol.isPrimaryKey;
-  const { generateQuery } = useGetDoltDiffQuery({
-    ...props,
-    row: props.row,
-    isPK,
-  });
 
-  useEffect(() => {
-    if (!submitting) {
-      return;
-    }
-
-    const query = generateQuery();
-    executeQuery({ ...props.params, query }).catch(console.error);
-    setSubmitting(false);
-  }, [submitting, props.params, executeQuery, isPK, props]);
+  const onClick = () => {
+    const pkValues = toPkValues(props.columns, props.row);
+    const columnName = isPK ? undefined : currCol.name;
+    const historyParams = encodeCellHistory({
+      tableName: props.params.tableName,
+      schemaName: props.params.schemaName,
+      pkValues,
+      columnName,
+    });
+    const baseRoute = query(props.params);
+    const pushQuery = {
+      schemaName: props.params.schemaName,
+      ...historyParams,
+    };
+    router
+      .push(
+        { pathname: baseRoute.hrefPathname(), query: pushQuery },
+        { pathname: baseRoute.asPathname(), query: pushQuery },
+      )
+      .catch(console.error);
+  };
 
   return (
     <span className={css.history}>
-      <Loader loaded={!submitting} />
       <Button.Link
-        onClick={() => setSubmitting(true)}
+        onClick={onClick}
         className={css.button}
         disabled={props.disabled}
       >
         {isPK ? "Row History" : "Cell History"}
         {props.disabled && <BsFillQuestionCircleFill className={css.help} />}
       </Button.Link>
-      <span className={css.popup}>{props.disabledPopup}</span>
+      {props.disabled && (
+        <span className={css.popup}>{props.disabledPopup}</span>
+      )}
     </span>
   );
 }
@@ -93,9 +107,7 @@ export default function HistoryButton(props: Props): JSX.Element | null {
     isView ||
     isSystemTable ||
     !columns ||
-    // Need values of all PK columns to generate query for history
     !pksShowing ||
-    // History will not work for joins
     isJoin;
 
   return (
@@ -121,6 +133,24 @@ export default function HistoryButton(props: Props): JSX.Element | null {
       }
     />
   );
+}
+
+function toPkValues(
+  cols: ColumnForDataTableFragment[],
+  row: RowForDataTableFragment,
+): ColumnValueInput[] {
+  return cols
+    .map((col, i) => {
+      return { col, value: row.columnValues[i].displayValue };
+    })
+    .filter(c => c.col.isPrimaryKey)
+    .map(({ col, value }) => {
+      return {
+        column: col.name,
+        value: col.type === "TIMESTAMP" ? convertTimestamp(value) : value,
+        type: col.type,
+      };
+    });
 }
 
 function getIsView(tableName: string, views?: SchemaItemFragment[]): boolean {

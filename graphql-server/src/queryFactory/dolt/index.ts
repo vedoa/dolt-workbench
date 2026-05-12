@@ -9,6 +9,8 @@ import { SchemaItem } from "../../schemas/schema.model";
 import { systemTableValues } from "../../systemTables/systemTable.enums";
 import { TableDetails } from "../../tables/table.model";
 import { ROW_LIMIT, handleTableNotFound } from "../../utils";
+import { buildDoltCellDiff } from "../build/buildDoltCellDiff";
+import { buildDoltCellHistory } from "../build/buildDoltCellHistory";
 import { MySQLQueryFactory } from "../mysql";
 import * as myqh from "../mysql/queries";
 import { mapTablesRes } from "../mysql/utils";
@@ -19,6 +21,8 @@ import {
   getAuthorString,
   getTestIdentifierArg,
   handleRefNotFound,
+  introspectColumns,
+  pkValuesWithTypes,
   unionCols,
 } from "./utils";
 import { InsertResult } from "typeorm";
@@ -637,6 +641,60 @@ export class DoltQueryFactory
   async saveTests(args: t.SaveTestsArgs): Promise<InsertResult> {
     return this.queryForBuilder(
       async em => dem.saveDoltTests(em, args.tests.list),
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async doltCellDiff(args: t.DoltCellLookupArgs): Promise<t.SqlSelectResult> {
+    const columns = await introspectColumns(
+      async () => this.getTableInfo(args),
+      args.tableName,
+    );
+    return this.queryForBuilder(
+      async em => {
+        const built = buildDoltCellDiff(em, `dolt_diff_${args.tableName}`, {
+          pkValues: pkValuesWithTypes(args.pkValues, columns),
+          columnNames: columns.map(c => c.name),
+          columnName: args.columnName,
+        });
+        return {
+          rows: await built.execute(),
+          isMutation: false,
+          executionMessage: "",
+          queryString: built.displaySql,
+        };
+      },
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async doltCellHistory(
+    args: t.DoltCellLookupArgs,
+  ): Promise<t.SqlSelectResult> {
+    const columns = await introspectColumns(
+      async () => this.getTableInfo(args),
+      args.tableName,
+    );
+    return this.queryForBuilder(
+      async em => {
+        const built = buildDoltCellHistory(
+          em,
+          `dolt_history_${args.tableName}`,
+          {
+            pkValues: pkValuesWithTypes(args.pkValues, columns),
+            columnNames: columns.map(c => c.name),
+            columnName: args.columnName,
+          },
+        );
+        return {
+          rows: await built.execute(),
+          isMutation: false,
+          executionMessage: "",
+          queryString: built.displaySql,
+        };
+      },
       args.databaseName,
       args.refName,
     );

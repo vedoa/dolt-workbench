@@ -584,6 +584,8 @@ export type Query = {
   diffSummaries: Array<DiffSummary>;
   docOrDefaultDoc?: Maybe<Doc>;
   docs: DocList;
+  doltCellDiff: SqlSelect;
+  doltCellHistory: SqlSelect;
   doltDatabaseDetails: DoltDatabaseDetails;
   doltProcedures: Array<SchemaItem>;
   doltSchemas: Array<SchemaItem>;
@@ -698,6 +700,26 @@ export type QueryDocOrDefaultDocArgs = {
 export type QueryDocsArgs = {
   databaseName: Scalars['String']['input'];
   refName: Scalars['String']['input'];
+};
+
+
+export type QueryDoltCellDiffArgs = {
+  columnName?: InputMaybe<Scalars['String']['input']>;
+  databaseName: Scalars['String']['input'];
+  pkValues: Array<ColumnValueInput>;
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+};
+
+
+export type QueryDoltCellHistoryArgs = {
+  columnName?: InputMaybe<Scalars['String']['input']>;
+  databaseName: Scalars['String']['input'];
+  pkValues: Array<ColumnValueInput>;
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
 };
 
 
@@ -1172,6 +1194,36 @@ export type UpdateRowMutationVariables = Exact<{
 
 
 export type UpdateRowMutation = { __typename?: 'Mutation', updateRow: { __typename?: 'MutationResult', rowsAffected: number, queryString: string, executionMessage: string } };
+
+export type RowForDoltCellLookupFragment = { __typename?: 'Row', columnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }>, diff?: { __typename?: 'WorkingDiff', diffColumnNames: Array<string>, diffColumnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }> } | null };
+
+export type ColumnForDoltCellLookupFragment = { __typename?: 'Column', name: string, isPrimaryKey: boolean, type: string, sourceTable?: string | null, constraints?: Array<{ __typename?: 'ColConstraint', notNull: boolean }> | null };
+
+export type SqlSelectForDoltCellLookupFragment = { __typename?: 'SqlSelect', queryString: string, columns: Array<{ __typename?: 'Column', name: string, isPrimaryKey: boolean, type: string, sourceTable?: string | null, constraints?: Array<{ __typename?: 'ColConstraint', notNull: boolean }> | null }>, rows: { __typename?: 'RowList', list: Array<{ __typename?: 'Row', columnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }>, diff?: { __typename?: 'WorkingDiff', diffColumnNames: Array<string>, diffColumnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }> } | null }> } };
+
+export type DoltCellDiffQueryVariables = Exact<{
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  pkValues: Array<ColumnValueInput> | ColumnValueInput;
+  columnName?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type DoltCellDiffQuery = { __typename?: 'Query', doltCellDiff: { __typename?: 'SqlSelect', queryString: string, columns: Array<{ __typename?: 'Column', name: string, isPrimaryKey: boolean, type: string, sourceTable?: string | null, constraints?: Array<{ __typename?: 'ColConstraint', notNull: boolean }> | null }>, rows: { __typename?: 'RowList', list: Array<{ __typename?: 'Row', columnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }>, diff?: { __typename?: 'WorkingDiff', diffColumnNames: Array<string>, diffColumnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }> } | null }> } } };
+
+export type DoltCellHistoryQueryVariables = Exact<{
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  pkValues: Array<ColumnValueInput> | ColumnValueInput;
+  columnName?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type DoltCellHistoryQuery = { __typename?: 'Query', doltCellHistory: { __typename?: 'SqlSelect', queryString: string, columns: Array<{ __typename?: 'Column', name: string, isPrimaryKey: boolean, type: string, sourceTable?: string | null, constraints?: Array<{ __typename?: 'ColConstraint', notNull: boolean }> | null }>, rows: { __typename?: 'RowList', list: Array<{ __typename?: 'Row', columnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }>, diff?: { __typename?: 'WorkingDiff', diffColumnNames: Array<string>, diffColumnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }> } | null }> } } };
 
 export type DropColumnMutationVariables = Exact<{
   databaseName: Scalars['String']['input'];
@@ -1979,6 +2031,44 @@ export type TableNamesQueryVariables = Exact<{
 
 export type TableNamesQuery = { __typename?: 'Query', tableNames: { __typename?: 'TableNames', list: Array<string> } };
 
+export const ColumnForDoltCellLookupFragmentDoc = gql`
+    fragment ColumnForDoltCellLookup on Column {
+  name
+  isPrimaryKey
+  type
+  sourceTable
+  constraints {
+    notNull
+  }
+}
+    `;
+export const RowForDoltCellLookupFragmentDoc = gql`
+    fragment RowForDoltCellLookup on Row {
+  columnValues {
+    displayValue
+  }
+  diff {
+    diffColumnNames
+    diffColumnValues {
+      displayValue
+    }
+  }
+}
+    `;
+export const SqlSelectForDoltCellLookupFragmentDoc = gql`
+    fragment SqlSelectForDoltCellLookup on SqlSelect {
+  queryString
+  columns {
+    ...ColumnForDoltCellLookup
+  }
+  rows {
+    list {
+      ...RowForDoltCellLookup
+    }
+  }
+}
+    ${ColumnForDoltCellLookupFragmentDoc}
+${RowForDoltCellLookupFragmentDoc}`;
 export const SchemaItemFragmentDoc = gql`
     fragment SchemaItem on SchemaItem {
   name
@@ -2595,6 +2685,110 @@ export function useUpdateRowMutation(baseOptions?: Apollo.MutationHookOptions<Up
 export type UpdateRowMutationHookResult = ReturnType<typeof useUpdateRowMutation>;
 export type UpdateRowMutationResult = Apollo.MutationResult<UpdateRowMutation>;
 export type UpdateRowMutationOptions = Apollo.BaseMutationOptions<UpdateRowMutation, UpdateRowMutationVariables>;
+export const DoltCellDiffDocument = gql`
+    query DoltCellDiff($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $pkValues: [ColumnValueInput!]!, $columnName: String) {
+  doltCellDiff(
+    databaseName: $databaseName
+    refName: $refName
+    schemaName: $schemaName
+    tableName: $tableName
+    pkValues: $pkValues
+    columnName: $columnName
+  ) {
+    ...SqlSelectForDoltCellLookup
+  }
+}
+    ${SqlSelectForDoltCellLookupFragmentDoc}`;
+
+/**
+ * __useDoltCellDiffQuery__
+ *
+ * To run a query within a React component, call `useDoltCellDiffQuery` and pass it any options that fit your needs.
+ * When your component renders, `useDoltCellDiffQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useDoltCellDiffQuery({
+ *   variables: {
+ *      databaseName: // value for 'databaseName'
+ *      refName: // value for 'refName'
+ *      schemaName: // value for 'schemaName'
+ *      tableName: // value for 'tableName'
+ *      pkValues: // value for 'pkValues'
+ *      columnName: // value for 'columnName'
+ *   },
+ * });
+ */
+export function useDoltCellDiffQuery(baseOptions: Apollo.QueryHookOptions<DoltCellDiffQuery, DoltCellDiffQueryVariables> & ({ variables: DoltCellDiffQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<DoltCellDiffQuery, DoltCellDiffQueryVariables>(DoltCellDiffDocument, options);
+      }
+export function useDoltCellDiffLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<DoltCellDiffQuery, DoltCellDiffQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<DoltCellDiffQuery, DoltCellDiffQueryVariables>(DoltCellDiffDocument, options);
+        }
+export function useDoltCellDiffSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<DoltCellDiffQuery, DoltCellDiffQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<DoltCellDiffQuery, DoltCellDiffQueryVariables>(DoltCellDiffDocument, options);
+        }
+export type DoltCellDiffQueryHookResult = ReturnType<typeof useDoltCellDiffQuery>;
+export type DoltCellDiffLazyQueryHookResult = ReturnType<typeof useDoltCellDiffLazyQuery>;
+export type DoltCellDiffSuspenseQueryHookResult = ReturnType<typeof useDoltCellDiffSuspenseQuery>;
+export type DoltCellDiffQueryResult = Apollo.QueryResult<DoltCellDiffQuery, DoltCellDiffQueryVariables>;
+export const DoltCellHistoryDocument = gql`
+    query DoltCellHistory($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $pkValues: [ColumnValueInput!]!, $columnName: String) {
+  doltCellHistory(
+    databaseName: $databaseName
+    refName: $refName
+    schemaName: $schemaName
+    tableName: $tableName
+    pkValues: $pkValues
+    columnName: $columnName
+  ) {
+    ...SqlSelectForDoltCellLookup
+  }
+}
+    ${SqlSelectForDoltCellLookupFragmentDoc}`;
+
+/**
+ * __useDoltCellHistoryQuery__
+ *
+ * To run a query within a React component, call `useDoltCellHistoryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useDoltCellHistoryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useDoltCellHistoryQuery({
+ *   variables: {
+ *      databaseName: // value for 'databaseName'
+ *      refName: // value for 'refName'
+ *      schemaName: // value for 'schemaName'
+ *      tableName: // value for 'tableName'
+ *      pkValues: // value for 'pkValues'
+ *      columnName: // value for 'columnName'
+ *   },
+ * });
+ */
+export function useDoltCellHistoryQuery(baseOptions: Apollo.QueryHookOptions<DoltCellHistoryQuery, DoltCellHistoryQueryVariables> & ({ variables: DoltCellHistoryQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<DoltCellHistoryQuery, DoltCellHistoryQueryVariables>(DoltCellHistoryDocument, options);
+      }
+export function useDoltCellHistoryLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<DoltCellHistoryQuery, DoltCellHistoryQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<DoltCellHistoryQuery, DoltCellHistoryQueryVariables>(DoltCellHistoryDocument, options);
+        }
+export function useDoltCellHistorySuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<DoltCellHistoryQuery, DoltCellHistoryQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<DoltCellHistoryQuery, DoltCellHistoryQueryVariables>(DoltCellHistoryDocument, options);
+        }
+export type DoltCellHistoryQueryHookResult = ReturnType<typeof useDoltCellHistoryQuery>;
+export type DoltCellHistoryLazyQueryHookResult = ReturnType<typeof useDoltCellHistoryLazyQuery>;
+export type DoltCellHistorySuspenseQueryHookResult = ReturnType<typeof useDoltCellHistorySuspenseQuery>;
+export type DoltCellHistoryQueryResult = Apollo.QueryResult<DoltCellHistoryQuery, DoltCellHistoryQueryVariables>;
 export const DropColumnDocument = gql`
     mutation DropColumn($databaseName: String!, $refName: String!, $schemaName: String, $tableName: String!, $columnName: String!) {
   dropColumn(
