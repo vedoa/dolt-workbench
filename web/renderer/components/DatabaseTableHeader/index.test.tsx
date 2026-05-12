@@ -1,5 +1,6 @@
 import { MockedProvider } from "@apollo/client/testing";
 import { databaseDetailsMock } from "@components/util/NotDoltWrapper/mocks";
+import { DataTableContext } from "@contexts/dataTable";
 import { SqlEditorProvider } from "@contexts/sqleditor";
 import useMockRouter from "@hooks/useMockRouter";
 import { DatabasePageParams } from "@lib/params";
@@ -7,6 +8,23 @@ import { setupAndWait } from "@lib/testUtils.test";
 import { screen } from "@testing-library/react";
 import DatabaseTableHeader from ".";
 import { DEFAULT_LIMIT, sampleCreateQueryForEmpty } from "./useSqlStrings";
+
+const dataTableCtxMock = {
+  params: { databaseName: "test", refName: "main" },
+  loading: false,
+  loadingWorkingDiff: false,
+  loadMore: async () => {},
+  loadMoreWorkingDiff: async () => {},
+  hasMore: false,
+  hasMoreWorkingDiff: false,
+  showingWorkingDiff: false,
+  tableNames: [],
+  onAddEmptyRow: () => {},
+  setPendingRow: () => {},
+  setWorkingDiffRowsToggled: () => {},
+  diffExists: false,
+  tableShape: true,
+};
 
 const dbParams = {
   databaseName: "test",
@@ -31,9 +49,11 @@ async function renderAndTestComponent(
 ) {
   const { user } = await setupAndWait(
     <MockedProvider mocks={[databaseDetailsMock(true, true, isPostgres)]}>
-      <SqlEditorProvider params={params}>
-        <DatabaseTableHeader params={params} empty={empty} />
-      </SqlEditorProvider>
+      <DataTableContext.Provider value={dataTableCtxMock}>
+        <SqlEditorProvider params={params}>
+          <DatabaseTableHeader params={params} empty={empty} />
+        </SqlEditorProvider>
+      </DataTableContext.Provider>
     </MockedProvider>,
   );
 

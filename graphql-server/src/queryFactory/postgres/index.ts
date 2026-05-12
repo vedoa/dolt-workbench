@@ -18,7 +18,9 @@ import { buildDeleteRow } from "../build/buildDeleteRow";
 import { buildDropColumn } from "../build/buildDropColumn";
 import { buildDropTable } from "../build/buildDropTable";
 import { buildInsertRow } from "../build/buildInsertRow";
+import { buildSelectTableRows } from "../build/buildSelectTableRows";
 import { buildUpdateRow } from "../build/buildUpdateRow";
+import { ROW_LIMIT } from "../../utils";
 import {
   DDL_EXECUTION_MESSAGE,
   mutationExecutionMessage,
@@ -281,6 +283,37 @@ export class PostgresQueryFactory
           rowsAffected: 0,
           queryString: built.displaySql,
           executionMessage: DDL_EXECUTION_MESSAGE,
+        };
+      },
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async selectTableRows(
+    args: t.SelectTableRowsArgs,
+  ): Promise<t.SqlSelectResult> {
+    return this.queryQR(
+      async qr => {
+        const schemaName = await getSchema(qr, args);
+        const target = tableWithSchema({
+          tableName: args.tableName,
+          schemaName,
+        });
+        const built = buildSelectTableRows(qr.manager, target, {
+          orderBy: args.orderBy,
+          where: args.where,
+          excludePks: args.excludePks,
+          projection: args.projection,
+          offset: args.offset,
+          limit: ROW_LIMIT + 1,
+        });
+        const rows = await built.execute();
+        return {
+          rows,
+          isMutation: false,
+          executionMessage: "",
+          queryString: built.displaySql,
         };
       },
       args.databaseName,

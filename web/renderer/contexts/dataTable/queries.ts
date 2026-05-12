@@ -84,6 +84,38 @@ export const ROWS_FOR_DATA_TABLE = gql`
   }
 `;
 
+export const SELECT_TABLE_ROWS_FOR_DATA_TABLE = gql`
+  query SelectTableRowsForDataTable(
+    $databaseName: String!
+    $refName: String!
+    $tableName: String!
+    $schemaName: String
+    $orderBy: [OrderByClause!]
+    $where: [ColumnValueInput!]
+    $excludePks: [PkRow!]
+    $projection: [String!]
+    $offset: Int
+  ) {
+    selectTableRows(
+      databaseName: $databaseName
+      refName: $refName
+      tableName: $tableName
+      schemaName: $schemaName
+      orderBy: $orderBy
+      where: $where
+      excludePks: $excludePks
+      projection: $projection
+      offset: $offset
+    ) {
+      _id
+      queryString
+      rows {
+        ...RowListRows
+      }
+    }
+  }
+`;
+
 export const WORKING_DIFF_ROWS_FOR_DATA_TABLE = gql`
   fragment WorkingDiffRowForDataTable on Row {
     columnValues {

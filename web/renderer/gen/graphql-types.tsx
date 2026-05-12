@@ -489,6 +489,15 @@ export type MutationResult = {
   rowsAffected: Scalars['Int']['output'];
 };
 
+export type OrderByClause = {
+  column: Scalars['String']['input'];
+  direction: SortDirection;
+};
+
+export type PkRow = {
+  values: Array<ColumnValueInput>;
+};
+
 export type PullConflictSummary = {
   __typename?: 'PullConflictSummary';
   _id: Scalars['ID']['output'];
@@ -582,6 +591,7 @@ export type Query = {
   runTests: TestResultList;
   schemaDiff?: Maybe<SchemaDiff>;
   schemas: Array<Scalars['String']['output']>;
+  selectTableRows: SqlSelect;
   sqlSelect: SqlSelect;
   sqlSelectForCsvDownload: Scalars['String']['output'];
   status: Array<Status>;
@@ -803,6 +813,19 @@ export type QuerySchemasArgs = {
 };
 
 
+export type QuerySelectTableRowsArgs = {
+  databaseName: Scalars['String']['input'];
+  excludePks?: InputMaybe<Array<PkRow>>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<OrderByClause>>;
+  projection?: InputMaybe<Array<Scalars['String']['input']>>;
+  refName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  tableName: Scalars['String']['input'];
+  where?: InputMaybe<Array<ColumnValueInput>>;
+};
+
+
 export type QuerySqlSelectArgs = {
   databaseName: Scalars['String']['input'];
   offset?: InputMaybe<Scalars['Int']['input']>;
@@ -973,6 +996,11 @@ export enum SchemaType {
 export enum SortBranchesBy {
   LastUpdated = 'LastUpdated',
   Unspecified = 'Unspecified'
+}
+
+export enum SortDirection {
+  Asc = 'Asc',
+  Desc = 'Desc'
 }
 
 export type SqlSelect = {
@@ -1853,6 +1881,21 @@ export type RowsForDataTableQueryVariables = Exact<{
 
 
 export type RowsForDataTableQuery = { __typename?: 'Query', rows: { __typename?: 'RowList', nextOffset?: number | null, list: Array<{ __typename?: 'Row', columnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }>, diff?: { __typename?: 'WorkingDiff', diffColumnNames: Array<string>, diffColumnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }> } | null }> } };
+
+export type SelectTableRowsForDataTableQueryVariables = Exact<{
+  databaseName: Scalars['String']['input'];
+  refName: Scalars['String']['input'];
+  tableName: Scalars['String']['input'];
+  schemaName?: InputMaybe<Scalars['String']['input']>;
+  orderBy?: InputMaybe<Array<OrderByClause> | OrderByClause>;
+  where?: InputMaybe<Array<ColumnValueInput> | ColumnValueInput>;
+  excludePks?: InputMaybe<Array<PkRow> | PkRow>;
+  projection?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type SelectTableRowsForDataTableQuery = { __typename?: 'Query', selectTableRows: { __typename?: 'SqlSelect', _id: string, queryString: string, rows: { __typename?: 'RowList', nextOffset?: number | null, list: Array<{ __typename?: 'Row', columnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }>, diff?: { __typename?: 'WorkingDiff', diffColumnNames: Array<string>, diffColumnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }> } | null }> } } };
 
 export type WorkingDiffRowForDataTableFragment = { __typename?: 'Row', columnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }>, diff?: { __typename?: 'WorkingDiff', diffColumnNames: Array<string>, diffColumnValues: Array<{ __typename?: 'ColumnValue', displayValue: string }> } | null };
 
@@ -5464,6 +5507,68 @@ export type RowsForDataTableQueryHookResult = ReturnType<typeof useRowsForDataTa
 export type RowsForDataTableQueryLazyQueryHookResult = ReturnType<typeof useRowsForDataTableQueryLazyQuery>;
 export type RowsForDataTableQuerySuspenseQueryHookResult = ReturnType<typeof useRowsForDataTableQuerySuspenseQuery>;
 export type RowsForDataTableQueryQueryResult = Apollo.QueryResult<RowsForDataTableQuery, RowsForDataTableQueryVariables>;
+export const SelectTableRowsForDataTableDocument = gql`
+    query SelectTableRowsForDataTable($databaseName: String!, $refName: String!, $tableName: String!, $schemaName: String, $orderBy: [OrderByClause!], $where: [ColumnValueInput!], $excludePks: [PkRow!], $projection: [String!], $offset: Int) {
+  selectTableRows(
+    databaseName: $databaseName
+    refName: $refName
+    tableName: $tableName
+    schemaName: $schemaName
+    orderBy: $orderBy
+    where: $where
+    excludePks: $excludePks
+    projection: $projection
+    offset: $offset
+  ) {
+    _id
+    queryString
+    rows {
+      ...RowListRows
+    }
+  }
+}
+    ${RowListRowsFragmentDoc}`;
+
+/**
+ * __useSelectTableRowsForDataTableQuery__
+ *
+ * To run a query within a React component, call `useSelectTableRowsForDataTableQuery` and pass it any options that fit your needs.
+ * When your component renders, `useSelectTableRowsForDataTableQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useSelectTableRowsForDataTableQuery({
+ *   variables: {
+ *      databaseName: // value for 'databaseName'
+ *      refName: // value for 'refName'
+ *      tableName: // value for 'tableName'
+ *      schemaName: // value for 'schemaName'
+ *      orderBy: // value for 'orderBy'
+ *      where: // value for 'where'
+ *      excludePks: // value for 'excludePks'
+ *      projection: // value for 'projection'
+ *      offset: // value for 'offset'
+ *   },
+ * });
+ */
+export function useSelectTableRowsForDataTableQuery(baseOptions: Apollo.QueryHookOptions<SelectTableRowsForDataTableQuery, SelectTableRowsForDataTableQueryVariables> & ({ variables: SelectTableRowsForDataTableQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<SelectTableRowsForDataTableQuery, SelectTableRowsForDataTableQueryVariables>(SelectTableRowsForDataTableDocument, options);
+      }
+export function useSelectTableRowsForDataTableLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<SelectTableRowsForDataTableQuery, SelectTableRowsForDataTableQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<SelectTableRowsForDataTableQuery, SelectTableRowsForDataTableQueryVariables>(SelectTableRowsForDataTableDocument, options);
+        }
+export function useSelectTableRowsForDataTableSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<SelectTableRowsForDataTableQuery, SelectTableRowsForDataTableQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<SelectTableRowsForDataTableQuery, SelectTableRowsForDataTableQueryVariables>(SelectTableRowsForDataTableDocument, options);
+        }
+export type SelectTableRowsForDataTableQueryHookResult = ReturnType<typeof useSelectTableRowsForDataTableQuery>;
+export type SelectTableRowsForDataTableLazyQueryHookResult = ReturnType<typeof useSelectTableRowsForDataTableLazyQuery>;
+export type SelectTableRowsForDataTableSuspenseQueryHookResult = ReturnType<typeof useSelectTableRowsForDataTableSuspenseQuery>;
+export type SelectTableRowsForDataTableQueryResult = Apollo.QueryResult<SelectTableRowsForDataTableQuery, SelectTableRowsForDataTableQueryVariables>;
 export const WorkingDiffRowsForDataTableQueryDocument = gql`
     query WorkingDiffRowsForDataTableQuery($databaseName: String!, $refName: String!, $tableName: String!, $schemaName: String, $offset: Int) {
   workingDiffRows(

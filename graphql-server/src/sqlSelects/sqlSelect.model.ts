@@ -39,6 +39,49 @@ export class SqlSelect {
   warnings?: string[];
 }
 
+export function fromServerPaginatedRows(
+  databaseName: string,
+  refName: string,
+  doltRows: RawRow[],
+  executionMessage: string,
+  queryString: string,
+  offset: number,
+  warnings?: string[],
+): SqlSelect {
+  const base = {
+    // Offset is part of _id so paginated pages don't collide on one Apollo
+    // cache entity (displaySql strips OFFSET).
+    _id: `/databases/${databaseName}/refs/${refName}/queries/${queryString}/offset/${offset}`,
+    databaseName,
+    refName,
+    queryString,
+    rows: { list: [] as row.Row[] },
+    columns: [] as column.Column[],
+    queryExecutionStatus: QueryExecutionStatus.Success,
+    queryExecutionMessage: executionMessage,
+    isMutation: false,
+    warnings,
+  };
+  if (doltRows.length === 0) return base;
+
+  const list = doltRows.slice(0, ROW_LIMIT).map(row.fromDoltRowRes);
+  const columns: column.Column[] = Object.keys(doltRows[0]).map(c => {
+    return {
+      name: c,
+      isPrimaryKey: false,
+      type: "unknown",
+    };
+  });
+  return {
+    ...base,
+    columns,
+    rows: {
+      list,
+      nextOffset: getNextOffset(doltRows.length, offset),
+    },
+  };
+}
+
 export function fromSqlSelectRow(
   databaseName: string,
   refName: string,

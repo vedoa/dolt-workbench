@@ -75,6 +75,8 @@ export declare class QueryFactory {
     args: t.RefMaybeSchemaArgs & { queryString: string },
   ): Promise<t.SqlSelectResult>;
 
+  selectTableRows(args: t.SelectTableRowsArgs): Promise<t.SqlSelectResult>;
+
   deleteRow(args: t.DeleteRowArgs): Promise<t.MutationResult>;
 
   insertRow(args: t.InsertRowArgs): Promise<t.MutationResult>;

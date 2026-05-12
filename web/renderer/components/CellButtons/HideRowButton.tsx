@@ -1,13 +1,13 @@
 import { useDataTableContext } from "@contexts/dataTable";
-import { useSqlEditorContext } from "@contexts/sqleditor";
 import { Button } from "@dolthub/react-components";
 import {
   ColumnForDataTableFragment,
   RowForDataTableFragment,
 } from "@gen/graphql-types";
-import useSqlBuilder from "@hooks/useSqlBuilder";
+import useDataTableStack from "@hooks/useDataTableStack";
+import { appendExcludePk } from "@lib/dataTableParams";
 import css from "./index.module.css";
-import { toPKColsMapQueryCols } from "./utils";
+import { toPKWhereClauses } from "./utils";
 
 type Props = {
   row: RowForDataTableFragment;
@@ -15,19 +15,18 @@ type Props = {
 };
 
 export default function HideRowButton(props: Props) {
-  const { executeQuery } = useSqlEditorContext();
-  const { params, columns } = useDataTableContext();
+  const { params, columns, tableShape } = useDataTableContext();
+  const { stack, update } = useDataTableStack();
   const { tableName } = params;
-  const { hideRowQuery } = useSqlBuilder();
 
-  if (!tableName) return null;
+  if (!tableName || !tableShape) return null;
 
-  const onClick = async () => {
-    const query = hideRowQuery(
-      tableName,
-      toPKColsMapQueryCols(props.row, props.columns, columns),
-    );
-    await executeQuery({ ...params, query });
+  const onClick = () => {
+    const values = toPKWhereClauses(props.row, props.columns, columns);
+    update({
+      ...stack,
+      excludePks: appendExcludePk(stack.excludePks, { values }),
+    });
   };
 
   return (
