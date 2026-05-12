@@ -11,6 +11,7 @@ import { TableDetails } from "../../tables/table.model";
 import { ROW_LIMIT, handleTableNotFound } from "../../utils";
 import { buildDoltCellDiff } from "../build/buildDoltCellDiff";
 import { buildDoltCellHistory } from "../build/buildDoltCellHistory";
+import { buildDoltCommitDiff } from "../build/buildDoltCommitDiff";
 import { MySQLQueryFactory } from "../mysql";
 import * as myqh from "../mysql/queries";
 import { mapTablesRes } from "../mysql/utils";
@@ -641,6 +642,37 @@ export class DoltQueryFactory
   async saveTests(args: t.SaveTestsArgs): Promise<InsertResult> {
     return this.queryForBuilder(
       async em => dem.saveDoltTests(em, args.tests.list),
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async doltCommitDiff(args: t.DoltCommitDiffArgs): Promise<t.SqlSelectResult> {
+    const columns = await introspectColumns(
+      async () => this.getTableInfo(args),
+      args.tableName,
+    );
+    const excluded = new Set(args.excludedColumns ?? []);
+    const columnNames = columns.map(c => c.name).filter(n => !excluded.has(n));
+    return this.queryForBuilder(
+      async em => {
+        const built = buildDoltCommitDiff(
+          em,
+          `dolt_commit_diff_${args.tableName}`,
+          {
+            fromCommitId: args.fromCommitId,
+            toCommitId: args.toCommitId,
+            columnNames,
+            type: args.type,
+          },
+        );
+        return {
+          rows: await built.execute(),
+          isMutation: false,
+          executionMessage: "",
+          queryString: built.displaySql,
+        };
+      },
       args.databaseName,
       args.refName,
     );

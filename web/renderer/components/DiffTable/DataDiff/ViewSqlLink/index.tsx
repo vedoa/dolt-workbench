@@ -6,11 +6,11 @@ import {
   CommitDiffType,
   useDataTableQuery,
 } from "@gen/graphql-types";
-import { useGetDoltCommitDiffQuery } from "@hooks/useDoltQueryBuilder/useGetDoltCommitDiffQuery";
+import { encodeCommitDiff } from "@lib/commitDiffUrl";
 import { RequiredRefsParams } from "@lib/params";
-import { sqlQuery } from "@lib/urls";
+import { query as queryRoute } from "@lib/urls";
 import { AiOutlineConsoleSql } from "@react-icons/all-files/ai/AiOutlineConsoleSql";
-import { HiddenColIndexes } from "../utils";
+import { HiddenColIndexes, isHiddenColumn } from "../utils";
 import css from "./index.module.css";
 
 type Props = {
@@ -27,7 +27,18 @@ type InnerProps = Props & {
 };
 
 function Inner(props: InnerProps) {
-  const { generateQuery } = useGetDoltCommitDiffQuery(props);
+  const excludedColumns = props.columns
+    .filter((_, i) => isHiddenColumn(i, props.hiddenColIndexes))
+    .map(c => c.name);
+  const commitDiffParams = encodeCommitDiff({
+    tableName: props.params.tableName,
+    fromCommitId: props.params.fromRefName,
+    toCommitId: props.params.toRefName,
+    excludedColumns,
+    type: props.type,
+  });
+  const baseRoute = queryRoute(props.params);
+  const pushQuery = { ...commitDiffParams };
 
   return (
     <DropdownItem
@@ -35,10 +46,8 @@ function Inner(props: InnerProps) {
       data-cy="view-sql-link"
     >
       <Link
-        {...sqlQuery({
-          ...props.params,
-          q: generateQuery(),
-        })}
+        href={{ pathname: baseRoute.hrefPathname(), query: pushQuery }}
+        as={{ pathname: baseRoute.asPathname(), query: pushQuery }}
         className={css.sqlLink}
       >
         View SQL

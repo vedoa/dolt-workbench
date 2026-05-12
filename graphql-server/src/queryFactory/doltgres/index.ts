@@ -10,6 +10,7 @@ import { TableDetails } from "../../tables/table.model";
 import { handleTableNotFound } from "../../utils";
 import { buildDoltCellDiff } from "../build/buildDoltCellDiff";
 import { buildDoltCellHistory } from "../build/buildDoltCellHistory";
+import { buildDoltCommitDiff } from "../build/buildDoltCommitDiff";
 import * as dem from "../dolt/doltEntityManager";
 import {
   getAuthorString,
@@ -624,6 +625,48 @@ export class DoltgresQueryFactory
   async saveTests(args: t.SaveTestsArgs): Promise<InsertResult> {
     return this.queryForBuilder(
       async em => dem.saveDoltTests(em, args.tests.list),
+      args.databaseName,
+      args.refName,
+    );
+  }
+
+  async doltCommitDiff(args: t.DoltCommitDiffArgs): Promise<t.SqlSelectResult> {
+    return this.queryQR(
+      async qr => {
+        const { baseTableName, schemaName } = await this.normalizeTable(
+          qr,
+          args,
+        );
+        const columns = await introspectColumns(
+          async () =>
+            this.getTableInfo({
+              ...args,
+              tableName: baseTableName,
+              schemaName,
+            }),
+          args.tableName,
+        );
+        const excluded = new Set(args.excludedColumns ?? []);
+        const columnNames = columns
+          .map(c => c.name)
+          .filter(n => !excluded.has(n));
+        const target = tableWithSchema({
+          tableName: `dolt_commit_diff_${baseTableName}`,
+          schemaName,
+        });
+        const built = buildDoltCommitDiff(qr.manager, target, {
+          fromCommitId: args.fromCommitId,
+          toCommitId: args.toCommitId,
+          columnNames,
+          type: args.type,
+        });
+        return {
+          rows: await built.execute(),
+          isMutation: false,
+          executionMessage: "",
+          queryString: built.displaySql,
+        };
+      },
       args.databaseName,
       args.refName,
     );

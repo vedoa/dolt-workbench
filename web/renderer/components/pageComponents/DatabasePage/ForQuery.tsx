@@ -1,3 +1,4 @@
+import CommitDiffTable from "@components/CommitDiffTable";
 import HistoryTable from "@components/HistoryTable";
 import SchemaFragment from "@components/SchemaFragment";
 import SqlDataTable from "@components/SqlDataTable";
@@ -33,6 +34,14 @@ function Inner({ params }: Props) {
     return (
       <DatabasePage {...commonProps}>
         <HistoryTable params={params} />
+      </DatabasePage>
+    );
+  }
+
+  if (router.query.commitDiffTable) {
+    return (
+      <DatabasePage {...commonProps}>
+        <CommitDiffTable params={params} />
       </DatabasePage>
     );
   }
