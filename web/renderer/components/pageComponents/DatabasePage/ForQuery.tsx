@@ -4,12 +4,10 @@ import SqlDataTable from "@components/SqlDataTable";
 import QueryBreadcrumbs from "@components/breadcrumbs/QueryBreadcrumbs";
 import { DataTableProvider } from "@contexts/dataTable";
 import useSqlParser from "@hooks/useSqlParser";
-import {
-  isShowSchemaFragmentQuery,
-  useIsDoltDiffTableQuery,
-} from "@lib/doltSystemTables";
+import { isShowSchemaFragmentQuery } from "@lib/doltSystemTables";
 import { RefParams, SqlQueryParams } from "@lib/params";
 import { ref, sqlQuery } from "@lib/urls";
+import { useRouter } from "next/router";
 import DatabasePage from "./component";
 
 type Props = {
@@ -17,8 +15,8 @@ type Props = {
 };
 
 function Inner({ params }: Props) {
+  const router = useRouter();
   const { isMutation } = useSqlParser();
-  const getIsDoltDiffTableQuery = useIsDoltDiffTableQuery();
   const routeRefChangeTo = (p: RefParams) =>
     isMutation(params.q)
       ? ref(p)
@@ -31,7 +29,7 @@ function Inner({ params }: Props) {
     routeRefChangeTo,
   };
 
-  if (getIsDoltDiffTableQuery(params.q)) {
+  if (router.query.historyTable) {
     return (
       <DatabasePage {...commonProps}>
         <HistoryTable params={params} />

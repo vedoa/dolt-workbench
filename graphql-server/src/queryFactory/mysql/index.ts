@@ -388,12 +388,14 @@ export class MySQLQueryFactory
     throw notDoltError("dolt commit diff preview");
   }
 
-  async doltCellDiff(_args: t.DoltCellLookupArgs): Promise<string> {
-    throw notDoltError("dolt cell diff preview");
+  async doltCellDiff(_args: t.DoltCellLookupArgs): Promise<t.SqlSelectResult> {
+    throw notDoltError("dolt cell diff");
   }
 
-  async doltCellHistory(_args: t.DoltCellLookupArgs): Promise<string> {
-    throw notDoltError("dolt cell history preview");
+  async doltCellHistory(
+    _args: t.DoltCellLookupArgs,
+  ): Promise<t.SqlSelectResult> {
+    throw notDoltError("dolt cell history");
   }
 
   // Returns static branch

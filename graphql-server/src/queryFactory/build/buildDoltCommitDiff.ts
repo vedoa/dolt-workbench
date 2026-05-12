@@ -4,9 +4,9 @@ import {
   BuiltSql,
   SENTINEL_ALIAS,
   bindParam,
+  builtSelect,
   diffSelectClause,
   newParamAccumulator,
-  previewSql,
 } from "./buildUtils";
 
 export type DoltCommitDiffBuildArgs = {
@@ -47,5 +47,5 @@ export function buildDoltCommitDiff(
     );
   }
 
-  return previewSql(qb, acc, escape);
+  return builtSelect(qb, acc, escape);
 }

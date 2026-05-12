@@ -667,35 +667,55 @@ export class DoltQueryFactory
     );
   }
 
-  async doltCellDiff(args: t.DoltCellLookupArgs): Promise<string> {
+  async doltCellDiff(args: t.DoltCellLookupArgs): Promise<t.SqlSelectResult> {
     const columns = await introspectColumns(
       async () => this.getTableInfo(args),
       args.tableName,
     );
     return this.queryForBuilder(
-      async em =>
-        buildDoltCellDiff(em, `dolt_diff_${args.tableName}`, {
+      async em => {
+        const built = buildDoltCellDiff(em, `dolt_diff_${args.tableName}`, {
           pkValues: pkValuesWithTypes(args.pkValues, columns),
           columnNames: columns.map(c => c.name),
           columnName: args.columnName,
-        }).displaySql,
+        });
+        return {
+          rows: await built.execute(),
+          isMutation: false,
+          executionMessage: "",
+          queryString: built.displaySql,
+        };
+      },
       args.databaseName,
       args.refName,
     );
   }
 
-  async doltCellHistory(args: t.DoltCellLookupArgs): Promise<string> {
+  async doltCellHistory(
+    args: t.DoltCellLookupArgs,
+  ): Promise<t.SqlSelectResult> {
     const columns = await introspectColumns(
       async () => this.getTableInfo(args),
       args.tableName,
     );
     return this.queryForBuilder(
-      async em =>
-        buildDoltCellHistory(em, `dolt_history_${args.tableName}`, {
-          pkValues: pkValuesWithTypes(args.pkValues, columns),
-          columnNames: columns.map(c => c.name),
-          columnName: args.columnName,
-        }).displaySql,
+      async em => {
+        const built = buildDoltCellHistory(
+          em,
+          `dolt_history_${args.tableName}`,
+          {
+            pkValues: pkValuesWithTypes(args.pkValues, columns),
+            columnNames: columns.map(c => c.name),
+            columnName: args.columnName,
+          },
+        );
+        return {
+          rows: await built.execute(),
+          isMutation: false,
+          executionMessage: "",
+          queryString: built.displaySql,
+        };
+      },
       args.databaseName,
       args.refName,
     );
