@@ -1,4 +1,5 @@
 import { SortBranchesBy } from "../branches/branch.enum";
+import { CommitDiffType } from "../diffSummaries/diffSummary.enums";
 import { DiffRowType } from "../rowDiffs/rowDiff.enums";
 
 export type DBArgs = { databaseName: string };
@@ -108,6 +109,13 @@ export type CreateViewArgs = RefMaybeSchemaArgs & {
 export type CallProcedureArgs = RefArgs & {
   name: string;
   args: string[];
+};
+
+export type DoltCommitDiffArgs = TableMaybeSchemaArgs & {
+  fromCommitId: string;
+  toCommitId: string;
+  excludedColumns?: string[];
+  type?: CommitDiffType;
 };
 
 export type DoltCellLookupArgs = TableMaybeSchemaArgs & {
