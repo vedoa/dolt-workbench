@@ -91,6 +91,8 @@ export declare class QueryFactory {
 
   createView(args: t.CreateViewArgs): Promise<t.MutationResult>;
 
+  callProcedure(args: t.CallProcedureArgs): Promise<t.MutationResult>;
+
   getSchemas(
     args: t.RefMaybeSchemaArgs,
     type?: SchemaType,

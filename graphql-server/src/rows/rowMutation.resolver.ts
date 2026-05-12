@@ -9,7 +9,11 @@ import {
   Resolver,
 } from "@nestjs/graphql";
 import { ConnectionProvider } from "../connections/connection.provider";
-import { RefMaybeSchemaArgs, TableMaybeSchemaArgs } from "../utils/commonTypes";
+import {
+  RefArgs,
+  RefMaybeSchemaArgs,
+  TableMaybeSchemaArgs,
+} from "../utils/commonTypes";
 
 @InputType()
 export class ColumnValueInput {
@@ -71,6 +75,15 @@ export class CreateViewArgs extends RefMaybeSchemaArgs {
   queryString: string;
 }
 
+@ArgsType()
+export class CallProcedureArgs extends RefArgs {
+  @Field()
+  name: string;
+
+  @Field(_type => [String])
+  args: string[];
+}
+
 @Resolver()
 export class RowMutationResolver {
   constructor(private readonly conn: ConnectionProvider) {}
@@ -109,5 +122,13 @@ export class RowMutationResolver {
   async createView(@Args() args: CreateViewArgs): Promise<MutationResult> {
     const conn = this.conn.connection();
     return conn.createView(args);
+  }
+
+  @Mutation(_returns => MutationResult)
+  async callProcedure(
+    @Args() args: CallProcedureArgs,
+  ): Promise<MutationResult> {
+    const conn = this.conn.connection();
+    return conn.callProcedure(args);
   }
 }

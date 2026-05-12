@@ -1,23 +1,24 @@
-import Link from "@components/links/Link";
 import { Button, Loader, Modal } from "@dolthub/react-components";
 import { StatusFragment, useRestoreAllMutation } from "@gen/graphql-types";
+import useCallProcedure from "@hooks/useCallProcedure";
+import useDatabaseDetails from "@hooks/useDatabaseDetails";
 import useMutation from "@hooks/useMutation";
-import useSqlBuilder from "@hooks/useSqlBuilder";
 import { ModalProps } from "@lib/modalProps";
 import { RefParams } from "@lib/params";
 import { getPostgresTableName } from "@lib/postgres";
 import { refetchUpdateDatabaseQueriesCacheEvict } from "@lib/refetchQueries";
-import { sqlQuery } from "@lib/urls";
 import css from "./index.module.css";
 
 type Props = ModalProps & {
   params: RefParams;
   status: StatusFragment[];
-  forDiffPage?: boolean;
 };
 
 export default function ResetModal(props: Props) {
-  const { getCallProcedure, isPostgres } = useSqlBuilder();
+  const { isPostgres } = useDatabaseDetails();
+  const { callProcedure, loading: callLoading } = useCallProcedure(
+    props.params,
+  );
   const { mutateFn, loading, err, client } = useMutation({
     hook: useRestoreAllMutation,
   });
@@ -34,22 +35,19 @@ export default function ResetModal(props: Props) {
     }
   };
 
-  const getTableName = (tn: string): string => {
-    if (isPostgres) {
-      return getPostgresTableName(tn);
-    }
-    return tn;
-  };
+  const getTableName = (tn: string): string =>
+    isPostgres ? getPostgresTableName(tn) : tn;
 
-  const onClose = () => {
-    props.setIsOpen(false);
+  const onPerRow = async (proc: "DOLT_RESET" | "DOLT_CHECKOUT", tn: string) => {
+    const { success } = await callProcedure(proc, [getTableName(tn)]);
+    if (success) props.setIsOpen(false);
   };
 
   return (
     <Modal
       title="Reset uncommitted changes"
       isOpen={props.isOpen}
-      onRequestClose={onClose}
+      onRequestClose={() => props.setIsOpen(false)}
       button={
         <Button onClick={onRestoreAll} pill>
           Restore all tables
@@ -58,7 +56,7 @@ export default function ResetModal(props: Props) {
       err={err}
     >
       <div>
-        <Loader loaded={!loading} />
+        <Loader loaded={!loading && !callLoading} />
         <p>
           Choose to unstage staged tables or restore tables to their current
           contents in the current <code>HEAD</code>.
@@ -78,27 +76,21 @@ export default function ResetModal(props: Props) {
                 <td>{st.status}</td>
                 <td>
                   {st.staged ? (
-                    <Link
-                      {...sqlQuery({
-                        ...props.params,
-                        q: getCallProcedure("DOLT_RESET", [
-                          getTableName(st.tableName),
-                        ]),
-                      })}
+                    <Button.Link
+                      onClick={async () => onPerRow("DOLT_RESET", st.tableName)}
+                      disabled={callLoading}
                     >
                       Unstage
-                    </Link>
+                    </Button.Link>
                   ) : (
-                    <Link
-                      {...sqlQuery({
-                        ...props.params,
-                        q: getCallProcedure("DOLT_CHECKOUT", [
-                          getTableName(st.tableName),
-                        ]),
-                      })}
+                    <Button.Link
+                      onClick={async () =>
+                        onPerRow("DOLT_CHECKOUT", st.tableName)
+                      }
+                      disabled={callLoading}
                     >
                       Restore
-                    </Link>
+                    </Button.Link>
                   )}
                 </td>
               </tr>
